@@ -16,7 +16,6 @@ interface BracketLayoutProps {
   matches: MatchSlot[]
   bracketPicks: Record<number, string>
   submitted: boolean
-  columnLocked: Record<string, boolean>
   onPick: (matchNumber: number, team: string) => void
   onClear: (matchNumber: number) => void
 }
@@ -35,12 +34,11 @@ interface ColumnProps {
   matchMap: Record<number, MatchSlot>
   bracketPicks: Record<number, string>
   submitted: boolean
-  roundLocked: boolean
   onPick: (matchNumber: number, team: string) => void
   onClear: (matchNumber: number) => void
 }
 
-function RoundColumn({ title, matchNumbers, matchMap, bracketPicks, submitted, roundLocked, onPick, onClear }: ColumnProps) {
+function RoundColumn({ title, matchNumbers, matchMap, bracketPicks, submitted, onPick, onClear }: ColumnProps) {
   return (
     <div className="flex w-[210px] shrink-0 flex-col gap-3">
       <div className="sticky top-0 z-10 pb-1">
@@ -62,7 +60,6 @@ function RoundColumn({ title, matchNumbers, matchMap, bracketPicks, submitted, r
             awayLabel={m.awayLabel}
             winner={bracketPicks[m.matchNumber] || null}
             locked={submitted}
-            roundLocked={roundLocked}
             onPick={onPick}
             onClear={onClear}
           />
@@ -72,7 +69,7 @@ function RoundColumn({ title, matchNumbers, matchMap, bracketPicks, submitted, r
   )
 }
 
-export function BracketLayout({ matches, bracketPicks, submitted, columnLocked, onPick, onClear }: BracketLayoutProps) {
+export function BracketLayout({ matches, bracketPicks, submitted, onPick, onClear }: BracketLayoutProps) {
   const matchMap = useMemo(() => {
     const map: Record<number, MatchSlot> = {}
     for (const m of matches) map[m.matchNumber] = m
@@ -90,7 +87,6 @@ export function BracketLayout({ matches, bracketPicks, submitted, columnLocked, 
               matchMap={matchMap}
               bracketPicks={bracketPicks}
               submitted={submitted}
-              roundLocked={columnLocked[col.key] ?? false}
               onPick={onPick}
               onClear={onClear}
             />

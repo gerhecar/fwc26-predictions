@@ -1,9 +1,8 @@
 'use client'
 
 import { useMemo, useCallback, useState } from 'react'
-import { usePredictionsStore, getQualifiedTeams, getThirdPlaceTeam } from '@/lib/predictions/store'
+import { usePredictionsStore, getThirdPlaceTeam } from '@/lib/predictions/store'
 import { CountryFlag } from '@/components/ui/country-flag'
-import { GROUP_LETTERS } from '@/lib/predictions/constants'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
 import { BracketLayout } from './bracket-layout'
 import type { GroupLetter } from '@/types'
@@ -39,20 +38,7 @@ const R32_THIRD_META = [
   { matchNumber: 87, homeLabel: '1° Grupo K', homeGroup: { pos: 'winner' as const, letter: 'K' } },
 ]
 
-const POSITION_MAP: Record<string, number> = {
-  '1A': 79, '1B': 85, '1D': 81, '1E': 74,
-  '1G': 82, '1I': 77, '1K': 87, '1L': 80,
-}
-
 const STAGE_ORDER = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'final'] as const
-
-const STAGE_LABELS: Record<string, string> = {
-  round_of_32: '32avos de final',
-  round_of_16: 'Octavos de final',
-  quarter_final: 'Cuartos de final',
-  semi_final: 'Semifinal',
-  final: 'Final',
-}
 
 const R32_MATCHES = [73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88]
 
@@ -84,10 +70,9 @@ function getAffected(matchNumber: number): number[] {
 function resolveMatch(
   match: MatchSlot,
   bracketPicks: Record<number, string>,
-  allMatches: MatchSlot[],
 ): { home: string | null; away: string | null } {
-  const homeTeam = resolveTeam(match.homeTeam, match.homeLabel, bracketPicks, allMatches)
-  const awayTeam = resolveTeam(match.awayTeam, match.awayLabel, bracketPicks, allMatches)
+  const homeTeam = resolveTeam(match.homeTeam, match.homeLabel, bracketPicks)
+  const awayTeam = resolveTeam(match.awayTeam, match.awayLabel, bracketPicks)
   return { home: homeTeam, away: awayTeam }
 }
 
@@ -95,19 +80,11 @@ function resolveTeam(
   directTeam: string | null,
   label: string,
   bracketPicks: Record<number, string>,
-  allMatches: MatchSlot[],
 ): string | null {
   if (directTeam) return directTeam
   const childMatchNum = extractMatchNumber(label)
   if (childMatchNum !== null && bracketPicks[childMatchNum]) {
     return bracketPicks[childMatchNum]
-  }
-  if (childMatchNum !== null) {
-    const childMatch = allMatches.find(m => m.matchNumber === childMatchNum)
-    if (childMatch) {
-      const resolved = resolveMatch(childMatch, bracketPicks, allMatches)
-      return resolved.home || resolved.away || null
-    }
   }
   return null
 }
@@ -129,11 +106,6 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
   const setBracketPick = usePredictionsStore((s) => s.setBracketPick)
   const submitted = usePredictionsStore((s) => s.submitted)
   const setSubmitted = usePredictionsStore((s) => s.setSubmitted)
-
-  const qualifiedTeams = useMemo(
-    () => getQualifiedTeams(groupPredictions, thirdPlaceSelection),
-    [groupPredictions, thirdPlaceSelection],
-  )
 
   const thirdAssignments = useMemo(() => {
     return lookupAnnexC(thirdPlaceSelection as GroupLetter[])
@@ -236,43 +208,16 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
     return matches.sort((a, b) => a.matchNumber - b.matchNumber)
   }, [getTeam, getThird, thirdAssignments])
 
-  const roundStates = useMemo(() => {
-    const r32Complete = R32_MATCHES.every(m => !!bracketPicks[m])
-    const r16MatchNumbers = [89, 90, 91, 92, 93, 94, 95, 96]
-    const r16Complete = r32Complete && r16MatchNumbers.every(m => !!bracketPicks[m])
-    const qfMatchNumbers = [97, 98, 99, 100]
-    const qfComplete = r16Complete && qfMatchNumbers.every(m => !!bracketPicks[m])
-    const sfMatchNumbers = [101, 102]
-    const sfComplete = qfComplete && sfMatchNumbers.every(m => !!bracketPicks[m])
-    return { r32Complete, r16Complete, qfComplete, sfComplete }
-  }, [bracketPicks])
-
-  const columnLocked = useMemo(() => ({
-    r32: false,
-    r16: !roundStates.r32Complete,
-    qf: !roundStates.r16Complete,
-    sf: !roundStates.qfComplete,
-    final: !roundStates.sfComplete,
-  }), [roundStates])
-
   const resolvedMatches = useMemo(() => {
     return baseMatches.map((m) => {
-      const stageLocked =
-        (m.stage === 'round_of_16' && columnLocked.r16) ||
-        (m.stage === 'quarter_final' && columnLocked.qf) ||
-        (m.stage === 'semi_final' && columnLocked.sf) ||
-        (m.stage === 'final' && columnLocked.final)
-      if (stageLocked) {
-        return { ...m, homeTeam: null, awayTeam: null }
-      }
-      const resolved = resolveMatch(m, bracketPicks, baseMatches)
+      const resolved = resolveMatch(m, bracketPicks)
       return {
         ...m,
         homeTeam: resolved.home || m.homeTeam,
         awayTeam: resolved.away || m.awayTeam,
       }
     })
-  }, [baseMatches, bracketPicks, columnLocked])
+  }, [baseMatches, bracketPicks])
 
   const handlePick = useCallback(
     (matchNumber: number, team: string) => {
@@ -397,7 +342,6 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         matches={resolvedMatches}
         bracketPicks={bracketPicks}
         submitted={submitted}
-        columnLocked={columnLocked}
         onPick={handlePick}
         onClear={handleClear}
       />
