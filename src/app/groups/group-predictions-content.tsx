@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { GroupRankCard } from '@/components/groups/group-rank-card'
+import { ThirdPlaceSelection } from '@/components/groups/third-place-selection'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import type { Group, Team, GroupLetter, GroupPrediction } from '@/types'
 
 interface GroupWithTeams extends Group {
@@ -242,6 +244,19 @@ export function GroupPredictionsContent() {
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
+      )}
+
+      {allComplete && (
+        <Card className="p-4">
+          <h2 className="mb-3 text-lg font-bold text-fifa-navy">
+            Terceros lugares clasificados
+          </h2>
+          <ThirdPlaceSelection
+            groups={groups}
+            tournamentId={groups[0]?.tournament_id || ''}
+            predictions={predictions}
+          />
+        </Card>
       )}
 
       <div className="sticky bottom-20 flex justify-center border-t border-border bg-white py-4">
