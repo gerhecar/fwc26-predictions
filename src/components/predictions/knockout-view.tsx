@@ -94,6 +94,9 @@ function extractMatchNumber(label: string): number | null {
   return match ? parseInt(match[1], 10) : null
 }
 
+const BG_URL =
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/SoFi_Stadium_23rd_March_2025.jpg/960px-SoFi_Stadium_23rd_March_2025.jpg'
+
 interface KnockoutViewProps {
   onEditGroups: () => void
   onEditThirdPlace: () => void
@@ -280,7 +283,17 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
   }, [allPicksComplete, submitted, submitting, groupPredictions, thirdPlaceSelection, bracketPicks, setSubmitted])
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="relative flex flex-col gap-6 animate-fade-in">
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${BG_URL})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      />
+      <div className="fixed inset-0 -z-10 bg-[#0a0e1a]/70 backdrop-blur-[2px]" />
       <div className="border-b border-white/10 pb-5">
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
           KNOCKOUT STAGE
