@@ -59,6 +59,7 @@ export interface GroupPrediction {
   second_place_team_id: string
   third_place_team_id: string
   fourth_place_team_id: string
+  third_place_qualified: string[] | null
   created_at: string
   updated_at: string
 }

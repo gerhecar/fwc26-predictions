@@ -3,11 +3,11 @@ import type { GroupLetter } from '@/types'
 const POSITION_MAP: Record<string, number> = {
   '1A': 79,
   '1B': 85,
-  '1D': 82,
-  '1E': 75,
-  '1G': 81,
-  '1I': 78,
-  '1K': 88,
+  '1D': 81,
+  '1E': 74,
+  '1G': 82,
+  '1I': 77,
+  '1K': 87,
   '1L': 80,
 }
 
