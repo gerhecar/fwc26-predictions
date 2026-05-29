@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { usePredictionsStore, getThirdPlaceTeam, getThirdPlaceTeams } from '@/lib/predictions/store'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS, GROUP_TEAMS } from '@/lib/predictions/constants'
+import BG from '@/images/imagen3s.png'
 
 interface ThirdPlacedViewProps {
   onBack?: () => void
@@ -54,7 +55,17 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
   const selectedCount = thirdPlaceSelection.length
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in">
+    <div className="relative flex flex-col gap-6 animate-fade-in">
+      <div
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${BG.src})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+        }}
+      />
+      <div className="fixed inset-0 -z-10 bg-[#0a0e1a]/70 backdrop-blur-[2px]" />
       <div className="border-b border-white/10 pb-5">
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
           TERCEROS LUGARES

@@ -6,6 +6,8 @@ import { CountryFlag } from '@/components/ui/country-flag'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
 import { BracketLayout } from './bracket-layout'
 import type { GroupLetter } from '@/types'
+import BG from '@/images/finals.jpg'
+import Trump from '@/images/trump.jpg'
 
 interface MatchSlot {
   matchNumber: number
@@ -93,9 +95,6 @@ function extractMatchNumber(label: string): number | null {
   const match = label.match(/#(\d+)/)
   return match ? parseInt(match[1], 10) : null
 }
-
-const BG_URL =
-  'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/SoFi_Stadium_23rd_March_2025.jpg/960px-SoFi_Stadium_23rd_March_2025.jpg'
 
 interface KnockoutViewProps {
   onEditGroups: () => void
@@ -287,7 +286,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
       <div
         className="fixed inset-0 -z-10"
         style={{
-          backgroundImage: `url(${BG_URL})`,
+          backgroundImage: `url(${BG.src})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -332,22 +331,31 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         </div>
       )}
 
-      {champion && submitted && (
-        <div className="rounded-2xl border border-accent-green/30 bg-accent-green/10 p-6 text-center backdrop-blur-md animate-slide-up">
-          <p className="font-[family-name:var(--font-bebas)] text-2xl tracking-wide text-accent-green">
-            ¡PRONÓSTICO ENVIADO!
-          </p>
-          <p className="mt-2 text-lg text-white">
-            <CountryFlag name={champion} width={24} className="inline-block -mt-0.5" /> {champion}
-          </p>
-          {saveSuccess && (
-            <p className="mt-1 text-sm text-text-secondary">
-              ID: {saveSuccess.predictionId.slice(0, 8)}...
+      {champion && submitted && saveSuccess && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center animate-fade-in">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${Trump.src})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+          <div className="absolute inset-0 bg-[#0a0e1a]/60" />
+          <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
+            <p
+              className="text-5xl leading-tight tracking-wide text-fifa-gold sm:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
+              style={{ fontFamily: 'var(--font-bebas)' }}
+            >
+              MAKE PORRA GREAT AGAIN
             </p>
-          )}
-          <p className="mt-0.5 text-sm text-text-secondary">
-            Ya no puedes modificar tu pronóstico.
-          </p>
+            <p className="text-lg text-white/80 drop-shadow-md">
+              <CountryFlag name={champion} width={24} className="inline-block -mt-0.5" /> {champion}
+            </p>
+            <p className="text-sm text-text-secondary drop-shadow-md">
+              ID: {saveSuccess.predictionId.slice(0, 8)}... — Ya no puedes modificar tu pronóstico.
+            </p>
+          </div>
         </div>
       )}
 
