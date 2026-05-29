@@ -8,7 +8,7 @@ import { KnockoutView } from './knockout-view'
 const STEPS = [
   { key: 'groups' as const, label: 'FASE DE GRUPOS', num: 1 },
   { key: 'third-place' as const, label: 'TERCEROS LUGARES', num: 2 },
-  { key: 'knockout' as const, label: 'LLAVE', num: 3 },
+  { key: 'knockout' as const, label: 'KNOCKOUT', num: 3 },
 ]
 
 function isStepComplete(step: string, currentStep: string): boolean {

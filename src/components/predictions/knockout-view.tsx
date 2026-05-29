@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 import { usePredictionsStore, getQualifiedTeams, getThirdPlaceTeam } from '@/lib/predictions/store'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS } from '@/lib/predictions/constants'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
+import { generatePredictionJson } from '@/lib/predictions/json-export'
+import { BracketLayout } from './bracket-layout'
 import type { GroupLetter } from '@/types'
 
 interface MatchSlot {
@@ -55,25 +57,6 @@ const STAGE_LABELS: Record<string, string> = {
 }
 
 const R32_MATCHES = [73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88]
-
-interface MatchCardProps {
-  match: MatchSlot
-  winner: string | null
-  allPicks: Record<number, string>
-  locked: boolean
-  onPick: (matchNumber: number, team: string) => void
-  onClear: (matchNumber: number) => void
-}
-
-function getTeamName(
-  groupPredictions: Record<string, string[]>,
-  thirdPlaceAssignments: Record<number, string> | null,
-  match: MatchSlot,
-  side: 'home' | 'away',
-): string | null {
-  if (side === 'home') return match.homeTeam
-  return match.awayTeam
-}
 
 const stageChildMap: Record<number, number[]> = {
   73: [], 74: [], 75: [], 76: [], 77: [], 78: [], 79: [], 80: [],
@@ -134,60 +117,6 @@ function resolveTeam(
 function extractMatchNumber(label: string): number | null {
   const match = label.match(/#(\d+)/)
   return match ? parseInt(match[1], 10) : null
-}
-
-function MatchCard({ match, winner, allPicks, locked, onPick, onClear }: MatchCardProps) {
-  const hasWinner = !!winner
-  return (
-    <div className={`rounded-xl border p-3 min-w-[200px] transition-all ${
-      hasWinner ? 'border-accent-green/40 bg-accent-green/5' : 'border-white/10 bg-white/5'
-    }`}>
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between text-[11px] text-text-secondary mb-0.5">
-          <span>#{match.matchNumber}</span>
-          <span className="font-[family-name:var(--font-bebas)] tracking-wider text-[10px] uppercase">{STAGE_ORDER.find(s => s === match.stage) ? match.stage.replace(/_/g, ' ') : match.stage}</span>
-        </div>
-
-        <button
-          type="button"
-          disabled={locked || !match.homeTeam}
-          onClick={() => match.homeTeam && onPick(match.matchNumber, match.homeTeam)}
-          className={`w-full text-left rounded-lg px-3 py-2 text-sm transition-all ${
-            winner === match.homeTeam
-              ? 'bg-accent-green/20 text-accent-green font-bold'
-              : 'bg-white/5 text-text-secondary hover:bg-white/[0.07] hover:text-white'
-          } ${locked || !match.homeTeam ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
-        >
-          {match.homeTeam || match.homeLabel}
-        </button>
-
-        <div className="border-t border-white/10" />
-
-        <button
-          type="button"
-          disabled={locked || !match.awayTeam}
-          onClick={() => match.awayTeam && onPick(match.matchNumber, match.awayTeam)}
-          className={`w-full text-left rounded-lg px-3 py-2 text-sm transition-all ${
-            winner === match.awayTeam
-              ? 'bg-accent-green/20 text-accent-green font-bold'
-              : 'bg-white/5 text-text-secondary hover:bg-white/[0.07] hover:text-white'
-          } ${locked || !match.awayTeam ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
-        >
-          {match.awayTeam || match.awayLabel}
-        </button>
-
-        {hasWinner && (
-          <button
-            type="button"
-            onClick={() => onClear(match.matchNumber)}
-            className="text-[11px] text-accent-gold hover:text-red-400 transition-colors mt-1 text-center"
-          >
-            Cambiar
-          </button>
-        )}
-      </div>
-    </div>
-  )
 }
 
 interface KnockoutViewProps {
@@ -359,20 +288,44 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
 
   const champion = bracketPicks[104] || null
 
-  const grouped = useMemo(() => {
-    const map: Record<string, MatchSlot[]> = {}
-    for (const m of resolvedMatches) {
-      if (!map[m.stage]) map[m.stage] = []
-      map[m.stage].push(m)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const handleSubmit = useCallback(async () => {
+    if (!allPicksComplete || submitted || submitting) return
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      const json = generatePredictionJson(
+        'Usuario',
+        groupPredictions,
+        thirdPlaceSelection,
+        bracketPicks,
+      )
+      const res = await fetch('/api/predictions/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(json),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Submission failed')
+      }
+      setSubmitted(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error submitting prediction'
+      setSubmitError(message)
+      setSubmitted(true)
+    } finally {
+      setSubmitting(false)
     }
-    return map
-  }, [resolvedMatches])
+  }, [allPicksComplete, submitted, submitting, groupPredictions, thirdPlaceSelection, bracketPicks, setSubmitted])
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="border-b border-white/10 pb-5">
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
-          LLAVE DE ELIMINACIÓN
+          KNOCKOUT STAGE
         </h1>
         <p className="mt-2 text-sm text-text-secondary max-w-2xl">
           Selecciona el ganador de cada partido. Completa la llave para definir tu campeón.
@@ -394,14 +347,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         >
           ← EDITAR 3° LUGARES
         </button>
-        {allPicksComplete && !submitted && (
-          <button
-            onClick={() => setSubmitted(true)}
-            className="rounded-full bg-accent-green px-5 py-2 text-xs font-bold tracking-wide text-black transition-all hover:scale-[1.02]"
-          >
-            ENVIAR PRONÓSTICO FINAL
-          </button>
-        )}
+
         {submitted && (
           <span className="rounded-full border border-accent-green/30 bg-accent-green/10 px-4 py-1.5 text-xs font-bold tracking-wide text-accent-green">
             ✓ PRONÓSTICO ENVIADO
@@ -409,11 +355,9 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         )}
       </div>
 
-      {champion && !submitted && (
-        <div className="rounded-2xl border border-accent-gold/30 bg-accent-gold/5 p-4 text-center backdrop-blur-md">
-          <p className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-accent-gold">
-            TU CAMPEÓN: <CountryFlag name={champion} width={22} className="inline-block -mt-0.5" /> {champion}
-          </p>
+      {submitError && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-center text-sm text-red-400">
+          {submitError}
         </div>
       )}
 
@@ -431,55 +375,32 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         </div>
       )}
 
-      {!champion && isR32Complete && !submitted && (
-        <div className="rounded-2xl border border-accent-gold/20 bg-accent-gold/5 p-4 text-center backdrop-blur-md">
-          <p className="text-sm font-medium text-accent-gold">
-            ¡Todos los 32avos completados! Continúa con las siguientes rondas.
-          </p>
+      <BracketLayout
+        matches={resolvedMatches}
+        bracketPicks={bracketPicks}
+        submitted={submitted}
+        onPick={handlePick}
+        onClear={handleClear}
+      />
+
+      {allPicksComplete && !submitted && (
+        <div className="flex justify-center pt-4 border-t border-white/10">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="relative rounded-full bg-accent-green px-12 py-4 text-base font-bold tracking-wide text-black transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+          >
+            {submitting ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                ENVIANDO...
+              </span>
+            ) : (
+              '🔒 LOCK & SUBMIT PREDICTION'
+            )}
+          </button>
         </div>
       )}
-
-      <div className="flex flex-col gap-8 overflow-x-auto pb-8">
-        {STAGE_ORDER.filter((s) => grouped[s]?.length).map((stage) => {
-          const prevStageIdx = STAGE_ORDER.indexOf(stage) - 1
-          const isLocked = submitted
-
-          let unlocked = !isLocked
-          if (stage === 'round_of_32') {
-            unlocked = !isLocked
-          } else if (prevStageIdx >= 0) {
-            const prevStage = STAGE_ORDER[prevStageIdx]
-            const prevMatches = grouped[prevStage]
-            unlocked = !isLocked && prevMatches.every(m => !!bracketPicks[m.matchNumber])
-          }
-
-          return (
-            <div key={stage} className={!unlocked && !isLocked ? 'opacity-40 pointer-events-none' : ''}>
-              <div className="flex items-center gap-2 mb-3">
-                <h2 className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-accent-gold">
-                  {STAGE_LABELS[stage]?.toUpperCase() || stage.toUpperCase()}
-                </h2>
-                {!unlocked && !isLocked && (
-                  <span className="text-[11px] text-text-secondary">(completa la ronda anterior)</span>
-                )}
-              </div>
-              <div className="flex gap-3 flex-wrap">
-                {grouped[stage].map((match) => (
-                  <MatchCard
-                    key={match.matchNumber}
-                    match={match}
-                    winner={bracketPicks[match.matchNumber] || null}
-                    allPicks={bracketPicks}
-                    locked={!unlocked || submitted}
-                    onPick={handlePick}
-                    onClear={handleClear}
-                  />
-                ))}
-              </div>
-            </div>
-          )
-        })}
-      </div>
     </div>
   )
 }

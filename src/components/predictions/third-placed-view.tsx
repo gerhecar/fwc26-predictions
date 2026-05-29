@@ -146,7 +146,7 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
           }`}
         >
           {selectedCount === 8
-            ? 'GUARDAR Y CONTINUAR A LLAVE'
+            ? 'GUARDAR Y CONTINUAR AL KNOCKOUT'
             : `SELECCIONA ${8 - selectedCount} MÁS`}
         </button>
       </div>

@@ -53,7 +53,7 @@ export default async function DashboardPage() {
           <Link href="/bracket">
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <div className="text-3xl">🏆</div>
-              <h3 className="mt-2 font-semibold">Llave Final</h3>
+              <h3 className="mt-2 font-semibold">Knockout Stage</h3>
               <p className="mt-1 text-sm text-text-secondary">
                 Arma tu bracket y elige al campeón
               </p>

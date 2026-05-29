@@ -38,7 +38,7 @@ export default async function BracketPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">Llave del Mundial</h1>
+        <h1 className="text-2xl font-bold">Knockout Stage</h1>
         <BracketView
           groups={groups}
           predictions={predictions}
