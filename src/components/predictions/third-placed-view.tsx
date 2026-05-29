@@ -1,12 +1,36 @@
 'use client'
 
-import { usePredictionsStore } from '@/lib/predictions/store'
+import { useEffect, useRef } from 'react'
+import { usePredictionsStore, getThirdPlaceTeam, getThirdPlaceTeams } from '@/lib/predictions/store'
 import { GROUP_LETTERS, getFlag, GROUP_TEAMS } from '@/lib/predictions/constants'
 
-export function ThirdPlacedView() {
+interface ThirdPlacedViewProps {
+  onBack?: () => void
+  onSaveAndContinue: () => void
+}
+
+export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewProps) {
   const groupPredictions = usePredictionsStore((s) => s.groupPredictions)
   const thirdPlaceSelection = usePredictionsStore((s) => s.thirdPlaceSelection)
   const toggleThirdPlace = usePredictionsStore((s) => s.toggleThirdPlace)
+  const setThirdPlaceSelection = usePredictionsStore((s) => s.setThirdPlaceSelection)
+
+  const hasPruned = useRef(false)
+
+  useEffect(() => {
+    if (hasPruned.current) return
+    hasPruned.current = true
+
+    const latestThird = getThirdPlaceTeams(groupPredictions)
+    const valid = thirdPlaceSelection.filter((letter) => {
+      const team = latestThird[letter]
+      return team !== null && groupPredictions[letter]?.[2] !== undefined
+    })
+
+    if (valid.length !== thirdPlaceSelection.length) {
+      setThirdPlaceSelection(valid)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const allComplete = GROUP_LETTERS.every(
     (l) => (groupPredictions[l]?.length ?? 0) === 4,
@@ -23,9 +47,7 @@ export function ThirdPlacedView() {
   }
 
   function getThirdPlace(letter: string): string | null {
-    const teams = groupPredictions[letter]
-    if (!teams || teams.length < 3) return GROUP_TEAMS[letter]?.[2] || null
-    return teams[2]
+    return getThirdPlaceTeam(groupPredictions, letter)
   }
 
   const selectedCount = thirdPlaceSelection.length
@@ -104,19 +126,29 @@ export function ThirdPlacedView() {
         })}
       </div>
 
-      {selectedCount === 8 && (
-        <div className="animate-slide-up rounded-2xl border border-accent-green/20 bg-accent-green/5 p-5 backdrop-blur-md">
-          <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-accent-green">
-            RESUMEN DE CLASIFICADOS
-          </p>
-          <p className="mt-1 text-sm text-text-secondary">
-            8 mejores terceros lugares de los grupos:{' '}
-            <span className="font-semibold text-white">
-              {[...thirdPlaceSelection].sort().join(' · ')}
-            </span>
-          </p>
-        </div>
-      )}
+      <div className="flex items-center justify-center gap-4 border-t border-white/10 pt-6">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
+          >
+            ← EDITAR GRUPOS
+          </button>
+        )}
+        <button
+          onClick={onSaveAndContinue}
+          disabled={selectedCount !== 8}
+          className={`relative rounded-full px-12 py-3.5 text-base font-bold tracking-wide transition-all duration-200 ${
+            selectedCount === 8
+              ? 'bg-accent-green text-black shadow-lg shadow-accent-green/30 hover:shadow-accent-green/50 animate-glow-pulse hover:scale-[1.02]'
+              : 'cursor-not-allowed bg-white/5 text-text-secondary border border-white/10'
+          }`}
+        >
+          {selectedCount === 8
+            ? 'GUARDAR Y CONTINUAR A LLAVE'
+            : `SELECCIONA ${8 - selectedCount} MÁS`}
+        </button>
+      </div>
     </div>
   )
 }

@@ -6,9 +6,10 @@ import { GroupCard } from './group-card'
 
 interface GroupsViewProps {
   onContinue: () => void
+  onBack?: () => void
 }
 
-export function GroupsView({ onContinue }: GroupsViewProps) {
+export function GroupsView({ onContinue, onBack }: GroupsViewProps) {
   const groupPredictions = usePredictionsStore((s) => s.groupPredictions)
   const setGroupOrder = usePredictionsStore((s) => s.setGroupOrder)
 
@@ -42,7 +43,15 @@ export function GroupsView({ onContinue }: GroupsViewProps) {
         ))}
       </div>
 
-      <div className="flex justify-center border-t border-white/10 pt-6">
+      <div className="flex items-center justify-center gap-4 border-t border-white/10 pt-6">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
+          >
+            ← VOLVER
+          </button>
+        )}
         <button
           onClick={onContinue}
           disabled={!allComplete}
