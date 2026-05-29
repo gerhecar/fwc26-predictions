@@ -42,11 +42,21 @@ export default async function BracketPage() {
     ? (thirdPlacePrediction.third_place_qualified as GroupLetter[])
     : []
 
+  const anyPrediction = predictions[0]
+
   return (
     <AppShell>
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold">Llave del Mundial</h1>
-        <BracketView groups={groups} predictions={predictions} thirdPlaceGroups={thirdPlaceGroups} />
+        <BracketView
+          groups={groups}
+          predictions={predictions}
+          thirdPlaceGroups={thirdPlaceGroups}
+          tournamentId={tournament.id}
+          initialPicks={anyPrediction?.bracket_predictions as Record<number, string> | undefined}
+          initialChampion={anyPrediction?.champion_id || null}
+          isSubmitted={anyPrediction?.status === 'submitted'}
+        />
       </div>
     </AppShell>
   )

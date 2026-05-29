@@ -60,6 +60,9 @@ export interface GroupPrediction {
   third_place_team_id: string
   fourth_place_team_id: string
   third_place_qualified: string[] | null
+  bracket_predictions: unknown
+  champion_id: string | null
+  status: string
   created_at: string
   updated_at: string
 }
