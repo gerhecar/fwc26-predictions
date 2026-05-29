@@ -1,7 +1,7 @@
 import { PredictionsFlow } from '@/components/predictions/predictions-flow'
 
 const BG_URL =
-  'https://media.bolavip.com/wp-content/uploads/sites/13/2026/03/12190255/nueva-cancha-estadio-azteca-1200x740.webp'
+  'https://images.unsplash.com/photo-1590459243251-d3e42c3dd700?fm=jpg&q=80&w=1920'
 
 export default function PredictionsPage() {
   return (

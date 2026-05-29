@@ -5,6 +5,9 @@ import { AppShell } from '@/components/layout/app-shell'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 
+const BG_URL =
+  'https://images.unsplash.com/photo-1731312084255-6b38e3ea2484?fm=jpg&q=60&w=3000'
+
 export default async function DashboardPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/auth/login')
@@ -17,7 +20,17 @@ export default async function DashboardPage() {
   const profile = (rows as any[])[0]
 
   return (
-    <AppShell>
+    <div
+      className="min-h-screen"
+      style={{
+        backgroundImage: `url(${BG_URL})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      <div className="min-h-screen bg-[#0a0e1a]/70 backdrop-blur-[2px]">
+        <AppShell>
       <div className="flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">
@@ -69,7 +82,9 @@ export default async function DashboardPage() {
             </Card>
           </Link>
         )}
+        </div>
+        </AppShell>
       </div>
-    </AppShell>
+    </div>
   )
 }
