@@ -26,6 +26,7 @@ export interface Group {
   id: string
   tournament_id: string
   letter: GroupLetter
+  name: string | null
   teams: Team[]
 }
 
