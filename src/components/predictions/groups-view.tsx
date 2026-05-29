@@ -12,6 +12,7 @@ interface GroupsViewProps {
 export function GroupsView({ onContinue, onBack }: GroupsViewProps) {
   const groupPredictions = usePredictionsStore((s) => s.groupPredictions)
   const setGroupOrder = usePredictionsStore((s) => s.setGroupOrder)
+  const reset = usePredictionsStore((s) => s.reset)
 
   const allComplete = GROUP_LETTERS.every(
     (l) => (groupPredictions[l]?.length ?? 0) === 4,
@@ -64,6 +65,16 @@ export function GroupsView({ onContinue, onBack }: GroupsViewProps) {
           {allComplete
             ? 'CONTINUAR A TERCEROS LUGARES'
             : `${pendingCount} GRUPO${pendingCount !== 1 ? 'S' : ''} PENDIENTE${pendingCount !== 1 ? 'S' : ''}`}
+        </button>
+        <button
+          onClick={() => {
+            if (window.confirm('¿Estás seguro? Se borrarán todas tus predicciones.')) {
+              reset()
+            }
+          }}
+          className="rounded-full border border-red-500/30 px-6 py-3 text-sm font-bold tracking-wide text-red-400 transition-all hover:border-red-400/50 hover:bg-red-500/10"
+        >
+          REINICIAR
         </button>
       </div>
     </div>
