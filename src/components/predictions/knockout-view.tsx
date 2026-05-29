@@ -2,7 +2,8 @@
 
 import { useMemo, useCallback } from 'react'
 import { usePredictionsStore, getQualifiedTeams, getThirdPlaceTeam } from '@/lib/predictions/store'
-import { GROUP_LETTERS, getFlag } from '@/lib/predictions/constants'
+import { CountryFlag } from '@/components/ui/country-flag'
+import { GROUP_LETTERS } from '@/lib/predictions/constants'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
 import type { GroupLetter } from '@/types'
 
@@ -411,7 +412,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
       {champion && !submitted && (
         <div className="rounded-2xl border border-accent-gold/30 bg-accent-gold/5 p-4 text-center backdrop-blur-md">
           <p className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-accent-gold">
-            TU CAMPEÓN: {getFlag(champion)} {champion}
+            TU CAMPEÓN: <CountryFlag name={champion} width={22} className="inline-block -mt-0.5" /> {champion}
           </p>
         </div>
       )}
@@ -422,7 +423,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
             ¡PRONÓSTICO ENVIADO!
           </p>
           <p className="mt-2 text-lg text-white">
-            {getFlag(champion)} {champion}
+            <CountryFlag name={champion} width={24} className="inline-block -mt-0.5" /> {champion}
           </p>
           <p className="mt-1 text-sm text-text-secondary">
             Ya no puedes modificar tu pronóstico.

@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getFlag } from '@/lib/flags'
+import { CountryFlag } from '@/components/ui/country-flag'
 import type { Team } from '@/types'
 
 interface SortableTeamSlotProps {
@@ -46,7 +46,7 @@ export function SortableTeamSlot({ team, rank, rankLabel, onRemove }: SortableTe
       </div>
 
       <div className="flex flex-1 items-center gap-1.5">
-        <span className="text-base">{getFlag(team.name)}</span>
+        <CountryFlag name={team.name} width={20} className="shrink-0" />
         <span className="font-medium text-text-primary">{team.name}</span>
       </div>
 

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import { usePredictionsStore, getThirdPlaceTeam, getThirdPlaceTeams } from '@/lib/predictions/store'
-import { GROUP_LETTERS, getFlag, GROUP_TEAMS } from '@/lib/predictions/constants'
+import { CountryFlag } from '@/components/ui/country-flag'
+import { GROUP_LETTERS, GROUP_TEAMS } from '@/lib/predictions/constants'
 
 interface ThirdPlacedViewProps {
   onBack?: () => void
@@ -105,7 +106,7 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
               </span>
               {thirdTeam && (
                 <span className="flex flex-col items-center gap-1">
-                  <span className="text-2xl leading-none">{getFlag(thirdTeam)}</span>
+                  <CountryFlag name={thirdTeam} width={28} className="shrink-0" />
                   <span className={`text-sm font-medium transition-colors ${
                     isSelected ? 'text-white' : 'text-text-secondary'
                   }`}>

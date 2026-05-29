@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 import { SortableTeamSlot } from './sortable-team-slot'
 import { Card } from '@/components/ui/card'
-import { getFlag } from '@/lib/flags'
+import { CountryFlag } from '@/components/ui/country-flag'
 import type { Team, GroupLetter } from '@/types'
 
 interface TeamWithRank extends Team {
@@ -129,7 +129,7 @@ export function GroupRankCard({
                 }}
                 className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:border-fifa-blue hover:bg-blue-50"
               >
-                <span>{getFlag(team.name)}</span>
+                <CountryFlag name={team.name} width={18} className="shrink-0" />
                 <span>{team.name}</span>
               </button>
             ))}

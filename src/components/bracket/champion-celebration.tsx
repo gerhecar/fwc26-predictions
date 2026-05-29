@@ -1,6 +1,6 @@
 'use client'
 
-import { getFlag } from '@/lib/flags'
+import { CountryFlag } from '@/components/ui/country-flag'
 import type { Team, Group } from '@/types'
 
 interface Props {
@@ -43,7 +43,7 @@ export function ChampionCelebration({ champion, championId, groups, compact }: P
         <div>
           <p className="text-xs text-fifa-gold uppercase tracking-wider">Tu campeón</p>
           <p className="text-xl font-bold text-white flex items-center gap-2">
-            {champion && <span>{getFlag(champion.name)}</span>}
+            {champion && <CountryFlag name={champion.name} width={22} className="shrink-0" />}
             {champion?.name || 'Seleccionado'}
           </p>
         </div>
@@ -65,7 +65,7 @@ export function ChampionCelebration({ champion, championId, groups, compact }: P
           Tu campeón del Mundial 2026:
         </p>
         <p className="text-4xl font-black text-white mb-4 flex items-center justify-center gap-3">
-          <span>{getFlag(championName)}</span>
+          <CountryFlag name={championName} width={28} className="shrink-0" />
           {championName}
         </p>
         <p className="text-sm text-gray-400">

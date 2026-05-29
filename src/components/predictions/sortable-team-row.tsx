@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { getFlag } from '@/lib/predictions/constants'
+import { CountryFlag } from '@/components/ui/country-flag'
 
 interface SortableTeamRowProps {
   id: string
@@ -57,7 +57,7 @@ export function SortableTeamRow({ id, teamName, rank }: SortableTeamRowProps) {
         {rank}
       </span>
 
-      <span className="text-xl leading-none">{getFlag(teamName)}</span>
+      <CountryFlag name={teamName} width={24} className="shrink-0" />
 
       <span className="flex-1 text-sm font-medium text-white">
         {teamName}

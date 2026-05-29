@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
-import { getFlag, getFlagFromUrl } from '@/lib/flags'
+import { CountryFlag } from '@/components/ui/country-flag'
 import type { Team, GroupLetter, GroupPrediction } from '@/types'
 import type { Group } from '@/types'
 import { buildBracket } from '@/lib/bracket/bracket-engine'
@@ -94,7 +94,6 @@ function TeamButton({
   isDisabled: boolean
   onPick: () => void
 }) {
-  const flag = teamName ? getFlag(teamName) : null
   return (
     <button
       type="button"
@@ -106,7 +105,7 @@ function TeamButton({
           : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
       } ${isDisabled || !teamId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
-      {flag && <span className="text-base shrink-0">{flag}</span>}
+      {teamName && <CountryFlag name={teamName} width={18} className="shrink-0" />}
       <span className="truncate">{teamName || label}</span>
     </button>
   )
@@ -331,7 +330,7 @@ export function BracketView({ groups, predictions, thirdPlaceGroups, tournamentI
           <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4 text-center">
             <p className="text-green-400 font-bold text-lg">¡Bracket completo!</p>
             <p className="text-green-300 text-sm flex items-center justify-center gap-1.5">
-              {championTeam && <span>{getFlag(championTeam.name)}</span>}
+              {championTeam && <CountryFlag name={championTeam.name} width={20} className="shrink-0" />}
               Tu campeón: {championTeam?.name}
             </p>
           </div>

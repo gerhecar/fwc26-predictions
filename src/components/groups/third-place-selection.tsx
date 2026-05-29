@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { getFlag } from '@/lib/flags'
+import { CountryFlag } from '@/components/ui/country-flag'
 import { getCurrentUser } from '@/lib/auth/client'
 import { loadUserPredictions, saveThirdPlacePicks } from '@/lib/predictions/actions'
 import { Button } from '@/components/ui/button'
@@ -117,7 +117,7 @@ export function ThirdPlaceSelection({ groups, tournamentId, predictions }: Props
               </span>
               {thirdTeam && (
                 <span className="text-sm font-medium text-text-primary flex items-center gap-1">
-                  <span>{getFlag(thirdTeam.name)}</span>
+                  <CountryFlag name={thirdTeam.name} width={20} className="shrink-0" />
                   {thirdTeam.name}
                 </span>
               )}
