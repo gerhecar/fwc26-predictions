@@ -11,6 +11,7 @@ interface BracketMatchCardProps {
   awayLabel: string
   winner: string | null
   locked: boolean
+  roundLocked?: boolean
   onPick: (matchNumber: number, team: string) => void
   onClear: (matchNumber: number) => void
 }
@@ -28,12 +29,41 @@ export function BracketMatchCard({
   awayLabel,
   winner,
   locked,
+  roundLocked = false,
   onPick,
   onClear,
 }: BracketMatchCardProps) {
   const hasWinner = !!winner
   const homePlaceholder = !homeTeam && isPlaceholder(homeLabel)
   const awayPlaceholder = !awayTeam && isPlaceholder(awayLabel)
+  const isBlocked = locked || roundLocked
+
+  if (roundLocked) {
+    return (
+      <div className="relative rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 opacity-30 select-none">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-medium text-text-secondary/60">#{matchNumber}</span>
+          <span className="text-[9px] font-[family-name:var(--font-bebas)] tracking-[0.15em] uppercase text-accent-gold/70">
+            {stage === 'round_of_32' ? 'R32'
+              : stage === 'round_of_16' ? 'R16'
+              : stage === 'quarter_final' ? 'QF'
+              : stage === 'semi_final' ? 'SF'
+              : stage === 'third_place' ? '3RD'
+              : 'FIN'}
+          </span>
+        </div>
+        <div className="flex flex-col items-center gap-2 py-4">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-text-secondary/40">
+            <rect x="4" y="8" width="12" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M6.5 8V6a3.5 3.5 0 1 1 7 0v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          <span className="text-[10px] italic text-text-secondary/40 text-center leading-tight">
+            Esperando ronda anterior
+          </span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -41,7 +71,7 @@ export function BracketMatchCard({
         hasWinner
           ? 'border-accent-green/50 bg-accent-green/[0.06] shadow-[0_0_15px_rgba(0,230,118,0.08)]'
           : 'border-white/10 bg-white/[0.04] hover:border-white/20'
-      } ${(locked && !hasWinner) || (homePlaceholder && awayPlaceholder && !hasWinner) ? 'opacity-40' : ''}`}
+      } ${isBlocked && !hasWinner ? 'opacity-40' : ''}`}
     >
       {hasWinner && (
         <div className="absolute -top-[3px] left-1/2 -translate-x-1/2 h-[3px] w-3/4 rounded-full bg-accent-green shadow-[0_0_6px_rgba(0,230,118,0.5)]" />
@@ -63,13 +93,13 @@ export function BracketMatchCard({
 
       <button
         type="button"
-        disabled={locked || !homeTeam || homePlaceholder}
+        disabled={isBlocked || !homeTeam || homePlaceholder}
         onClick={() => homeTeam && onPick(matchNumber, homeTeam)}
         className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-all ${
           winner === homeTeam
             ? 'bg-accent-green/15 text-accent-green font-bold'
             : 'bg-white/[0.03] text-text-secondary hover:bg-white/[0.06] hover:text-white'
-        } ${locked || !homeTeam || homePlaceholder ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+        } ${isBlocked || !homeTeam || homePlaceholder ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       >
         {homeTeam && !homePlaceholder ? (
           <CountryFlag name={homeTeam} width={18} className="shrink-0" />
@@ -91,13 +121,13 @@ export function BracketMatchCard({
 
       <button
         type="button"
-        disabled={locked || !awayTeam || awayPlaceholder}
+        disabled={isBlocked || !awayTeam || awayPlaceholder}
         onClick={() => awayTeam && onPick(matchNumber, awayTeam)}
         className={`w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition-all ${
           winner === awayTeam
             ? 'bg-accent-green/15 text-accent-green font-bold'
             : 'bg-white/[0.03] text-text-secondary hover:bg-white/[0.06] hover:text-white'
-        } ${locked || !awayTeam || awayPlaceholder ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+        } ${isBlocked || !awayTeam || awayPlaceholder ? 'cursor-not-allowed' : 'cursor-pointer'}`}
       >
         {awayTeam && !awayPlaceholder ? (
           <CountryFlag name={awayTeam} width={18} className="shrink-0" />

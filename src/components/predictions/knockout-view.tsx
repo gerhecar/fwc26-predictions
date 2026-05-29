@@ -247,8 +247,36 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
     return matches.sort((a, b) => a.matchNumber - b.matchNumber)
   }, [getTeam, getThird, thirdAssignments])
 
+  const roundStates = useMemo(() => {
+    const r32Complete = R32_MATCHES.every(m => !!bracketPicks[m])
+    const r16MatchNumbers = [89, 90, 91, 92, 93, 94, 95, 96]
+    const r16Complete = r32Complete && r16MatchNumbers.every(m => !!bracketPicks[m])
+    const qfMatchNumbers = [97, 98, 99, 100]
+    const qfComplete = r16Complete && qfMatchNumbers.every(m => !!bracketPicks[m])
+    const sfMatchNumbers = [101, 102]
+    const sfComplete = qfComplete && sfMatchNumbers.every(m => !!bracketPicks[m])
+    return { r32Complete, r16Complete, qfComplete, sfComplete }
+  }, [bracketPicks])
+
+  const columnLocked = useMemo(() => ({
+    r32: false,
+    r16: !roundStates.r32Complete,
+    qf: !roundStates.r16Complete,
+    sf: !roundStates.qfComplete,
+    final: !roundStates.sfComplete,
+    third: !roundStates.sfComplete,
+  }), [roundStates])
+
   const resolvedMatches = useMemo(() => {
     return baseMatches.map((m) => {
+      const stageLocked =
+        (m.stage === 'round_of_16' && columnLocked.r16) ||
+        (m.stage === 'quarter_final' && columnLocked.qf) ||
+        (m.stage === 'semi_final' && columnLocked.sf) ||
+        (['third_place', 'final'].includes(m.stage) && columnLocked.final)
+      if (stageLocked) {
+        return { ...m, homeTeam: null, awayTeam: null }
+      }
       const resolved = resolveMatch(m, bracketPicks, baseMatches)
       return {
         ...m,
@@ -256,9 +284,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         awayTeam: resolved.away || m.awayTeam,
       }
     })
-  }, [baseMatches, bracketPicks])
-
-  const isR32Complete = R32_MATCHES.every(m => !!bracketPicks[m])
+  }, [baseMatches, bracketPicks, columnLocked])
 
   const handlePick = useCallback(
     (matchNumber: number, team: string) => {
@@ -379,6 +405,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         matches={resolvedMatches}
         bracketPicks={bracketPicks}
         submitted={submitted}
+        columnLocked={columnLocked}
         onPick={handlePick}
         onClear={handleClear}
       />
