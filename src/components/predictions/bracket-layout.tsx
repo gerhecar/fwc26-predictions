@@ -27,7 +27,6 @@ const COLUMNS: { key: string; title: string; matchNumbers: number[] }[] = [
   { key: 'qf', title: 'Quarter Finals', matchNumbers: [97, 98, 99, 100] },
   { key: 'sf', title: 'Semi Finals', matchNumbers: [101, 102] },
   { key: 'final', title: 'Final', matchNumbers: [104] },
-  { key: 'third', title: 'Third Place', matchNumbers: [103] },
 ]
 
 interface ColumnProps {

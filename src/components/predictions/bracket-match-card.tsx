@@ -48,7 +48,7 @@ export function BracketMatchCard({
               : stage === 'round_of_16' ? 'R16'
               : stage === 'quarter_final' ? 'QF'
               : stage === 'semi_final' ? 'SF'
-              : stage === 'third_place' ? '3RD'
+
               : 'FIN'}
           </span>
         </div>

@@ -131,9 +131,22 @@ CREATE TABLE IF NOT EXISTS standings (
   FOREIGN KEY (user_group_id) REFERENCES user_groups(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS bet_submissions (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  prediction_json JSON NOT NULL,
+  champion_name VARCHAR(255) DEFAULT NULL,
+  status ENUM('submitted') NOT NULL DEFAULT 'submitted',
+  email_sent BOOLEAN NOT NULL DEFAULT FALSE,
+  email_error VARCHAR(500) DEFAULT NULL,
+  submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- INDEXES
 CREATE INDEX idx_predictions_user_tournament ON predictions(user_id, tournament_id);
 CREATE INDEX idx_predictions_tournament_group ON predictions(tournament_id, group_id);
 CREATE INDEX idx_standings_tournament ON standings(tournament_id, total_points DESC);
 CREATE INDEX idx_standings_group ON standings(user_group_id, total_points DESC);
 CREATE INDEX idx_matches_tournament ON matches(tournament_id, match_number);
+CREATE INDEX idx_bet_submissions_user ON bet_submissions(user_id);

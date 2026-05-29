@@ -5,7 +5,6 @@ import { usePredictionsStore, getQualifiedTeams, getThirdPlaceTeam } from '@/lib
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS } from '@/lib/predictions/constants'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
-import { generatePredictionJson } from '@/lib/predictions/json-export'
 import { BracketLayout } from './bracket-layout'
 import type { GroupLetter } from '@/types'
 
@@ -45,14 +44,13 @@ const POSITION_MAP: Record<string, number> = {
   '1G': 82, '1I': 77, '1K': 87, '1L': 80,
 }
 
-const STAGE_ORDER = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'third_place', 'final'] as const
+const STAGE_ORDER = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'final'] as const
 
 const STAGE_LABELS: Record<string, string> = {
   round_of_32: '32avos de final',
   round_of_16: 'Octavos de final',
   quarter_final: 'Cuartos de final',
   semi_final: 'Semifinal',
-  third_place: 'Tercer lugar',
   final: 'Final',
 }
 
@@ -65,7 +63,7 @@ const stageChildMap: Record<number, number[]> = {
   93: [83, 84], 94: [81, 82], 95: [86, 88], 96: [85, 87],
   97: [89, 90], 98: [93, 94], 99: [91, 92], 100: [95, 96],
   101: [97, 98], 102: [99, 100],
-  103: [101, 102], 104: [101, 102],
+  104: [101, 102],
 }
 
 function getAffected(matchNumber: number): number[] {
@@ -227,15 +225,6 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
     }
 
     matches.push({
-      matchNumber: 103,
-      stage: 'third_place',
-      homeTeam: null,
-      awayTeam: null,
-      homeLabel: 'Perdedor #101',
-      awayLabel: 'Perdedor #102',
-    })
-
-    matches.push({
       matchNumber: 104,
       stage: 'final',
       homeTeam: null,
@@ -264,7 +253,6 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
     qf: !roundStates.r16Complete,
     sf: !roundStates.qfComplete,
     final: !roundStates.sfComplete,
-    third: !roundStates.sfComplete,
   }), [roundStates])
 
   const resolvedMatches = useMemo(() => {
@@ -273,7 +261,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         (m.stage === 'round_of_16' && columnLocked.r16) ||
         (m.stage === 'quarter_final' && columnLocked.qf) ||
         (m.stage === 'semi_final' && columnLocked.sf) ||
-        (['third_place', 'final'].includes(m.stage) && columnLocked.final)
+        (m.stage === 'final' && columnLocked.final)
       if (stageLocked) {
         return { ...m, homeTeam: null, awayTeam: null }
       }
@@ -316,32 +304,31 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
 
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState<{ predictionId: string } | null>(null)
 
-  const handleSubmit = useCallback(async () => {
+  const handleSaveBet = useCallback(async () => {
     if (!allPicksComplete || submitted || submitting) return
     setSubmitting(true)
     setSubmitError(null)
     try {
-      const json = generatePredictionJson(
-        'Usuario',
-        groupPredictions,
-        thirdPlaceSelection,
-        bracketPicks,
-      )
-      const res = await fetch('/api/predictions/submit', {
+      const res = await fetch('/api/predictions/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(json),
+        body: JSON.stringify({
+          groupPredictions,
+          thirdPlaceSelection,
+          bracketPicks,
+        }),
       })
+      const data = await res.json()
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Submission failed')
+        throw new Error(data.error || 'Error al guardar')
       }
       setSubmitted(true)
+      setSaveSuccess({ predictionId: data.predictionId })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error submitting prediction'
+      const message = err instanceof Error ? err.message : 'Error al guardar el pronóstico'
       setSubmitError(message)
-      setSubmitted(true)
     } finally {
       setSubmitting(false)
     }
@@ -395,7 +382,12 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
           <p className="mt-2 text-lg text-white">
             <CountryFlag name={champion} width={24} className="inline-block -mt-0.5" /> {champion}
           </p>
-          <p className="mt-1 text-sm text-text-secondary">
+          {saveSuccess && (
+            <p className="mt-1 text-sm text-text-secondary">
+              ID: {saveSuccess.predictionId.slice(0, 8)}...
+            </p>
+          )}
+          <p className="mt-0.5 text-sm text-text-secondary">
             Ya no puedes modificar tu pronóstico.
           </p>
         </div>
@@ -410,11 +402,11 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         onClear={handleClear}
       />
 
-      {allPicksComplete && !submitted && (
+      {!submitted && (
         <div className="flex justify-center pt-4 border-t border-white/10">
           <button
-            onClick={handleSubmit}
-            disabled={submitting}
+            onClick={handleSaveBet}
+            disabled={!allPicksComplete || submitting}
             className="relative rounded-full bg-accent-green px-12 py-4 text-base font-bold tracking-wide text-black transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
           >
             {submitting ? (
@@ -423,7 +415,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
                 ENVIANDO...
               </span>
             ) : (
-              '🔒 LOCK & SUBMIT PREDICTION'
+              'SAVE BET'
             )}
           </button>
         </div>
