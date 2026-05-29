@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState, useCallback, useEffect } from 'react'
+import { getFlag, getFlagFromUrl } from '@/lib/flags'
 import type { Team, GroupLetter, GroupPrediction } from '@/types'
 import type { Group } from '@/types'
 import { buildBracket } from '@/lib/bracket/bracket-engine'
@@ -93,18 +94,20 @@ function TeamButton({
   isDisabled: boolean
   onPick: () => void
 }) {
+  const flag = teamName ? getFlag(teamName) : null
   return (
     <button
       type="button"
       disabled={isDisabled || !teamId}
       onClick={onPick}
-      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all ${
+      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2 ${
         isWinner
           ? 'bg-fifa-gold text-fifa-navy font-bold shadow-md shadow-fifa-gold/30'
           : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
       } ${isDisabled || !teamId ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
     >
-      {teamName || label}
+      {flag && <span className="text-base shrink-0">{flag}</span>}
+      <span className="truncate">{teamName || label}</span>
     </button>
   )
 }
@@ -327,7 +330,10 @@ export function BracketView({ groups, predictions, thirdPlaceGroups, tournamentI
         <div className="flex flex-col gap-3 mt-4">
           <div className="bg-green-900/20 border border-green-600/30 rounded-lg p-4 text-center">
             <p className="text-green-400 font-bold text-lg">¡Bracket completo!</p>
-            <p className="text-green-300 text-sm">Tu campeón: {championTeam?.name}</p>
+            <p className="text-green-300 text-sm flex items-center justify-center gap-1.5">
+              {championTeam && <span>{getFlag(championTeam.name)}</span>}
+              Tu campeón: {championTeam?.name}
+            </p>
           </div>
 
           <div className="flex gap-3 justify-center">

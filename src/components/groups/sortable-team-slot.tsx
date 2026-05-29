@@ -2,6 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { getFlag } from '@/lib/flags'
 import type { Team } from '@/types'
 
 interface SortableTeamSlotProps {
@@ -9,38 +10,6 @@ interface SortableTeamSlotProps {
   rank: number
   rankLabel: string
   onRemove: () => void
-}
-
-function getFlagEmoji(countryName: string): string {
-  const flags: Record<string, string> = {
-    'Argentina': '🇦🇷',
-    'Australia': '🇦🇺',
-    'Austria': '🇦🇹',
-    'Belgium': '🇧🇪',
-    'Brazil': '🇧🇷',
-    'Canada': '🇨🇦',
-    'Croatia': '🇭🇷',
-    'Denmark': '🇩🇰',
-    'Ecuador': '🇪🇨',
-    'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    'France': '🇫🇷',
-    'Germany': '🇩🇪',
-    'Iran': '🇮🇷',
-    'Italy': '🇮🇹',
-    'Japan': '🇯🇵',
-    'Mexico': '🇲🇽',
-    'Morocco': '🇲🇦',
-    'Netherlands': '🇳🇱',
-    'Poland': '🇵🇱',
-    'Portugal': '🇵🇹',
-    'Saudi Arabia': '🇸🇦',
-    'Senegal': '🇸🇳',
-    'Spain': '🇪🇸',
-    'USA': '🇺🇸',
-    'Ukraine': '🇺🇦',
-    'Uruguay': '🇺🇾',
-  }
-  return flags[countryName] || '🏳️'
 }
 
 const RANK_COLORS = ['bg-gold text-white', 'bg-gray-300 text-gray-700', 'bg-orange-200 text-orange-800', 'bg-red-100 text-red-700']
@@ -77,7 +46,7 @@ export function SortableTeamSlot({ team, rank, rankLabel, onRemove }: SortableTe
       </div>
 
       <div className="flex flex-1 items-center gap-1.5">
-        <span className="text-base">{getFlagEmoji(team.name)}</span>
+        <span className="text-base">{getFlag(team.name)}</span>
         <span className="font-medium text-text-primary">{team.name}</span>
       </div>
 

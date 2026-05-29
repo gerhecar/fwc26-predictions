@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 import { SortableTeamSlot } from './sortable-team-slot'
 import { Card } from '@/components/ui/card'
+import { getFlag } from '@/lib/flags'
 import type { Team, GroupLetter } from '@/types'
 
 interface TeamWithRank extends Team {
@@ -34,63 +35,6 @@ interface GroupRankCardProps {
 }
 
 const RANK_LABELS = ['1°', '2°', '3°', '4°']
-
-function getFlagEmoji(countryName: string): string {
-  const flags: Record<string, string> = {
-    'Argentina': '🇦🇷',
-    'Australia': '🇦🇺',
-    'Austria': '🇦🇹',
-    'Belgium': '🇧🇪',
-    'Bosnia and Herzegovina': '🇧🇦',
-    'Brazil': '🇧🇷',
-    'Canada': '🇨🇦',
-    'Cape Verde': '🇨🇻',
-    'Croatia': '🇭🇷',
-    'Curaçao': '🇨🇼',
-    'Czech Republic': '🇨🇿',
-    'DR Congo': '🇨🇩',
-    'Denmark': '🇩🇰',
-    'Ecuador': '🇪🇨',
-    'Egypt': '🇪🇬',
-    'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    'France': '🇫🇷',
-    'Germany': '🇩🇪',
-    'Ghana': '🇬🇭',
-    'Haiti': '🇭🇹',
-    'Iran': '🇮🇷',
-    'Iraq': '🇮🇶',
-    'Italy': '🇮🇹',
-    'Ivory Coast': '🇨🇮',
-    'Japan': '🇯🇵',
-    'Jordan': '🇯🇴',
-    'Korea Republic': '🇰🇷',
-    'Mexico': '🇲🇽',
-    'Morocco': '🇲🇦',
-    'Netherlands': '🇳🇱',
-    'New Zealand': '🇳🇿',
-    'Nigeria': '🇳🇬',
-    'Norway': '🇳🇴',
-    'Paraguay': '🇵🇾',
-    'Poland': '🇵🇱',
-    'Portugal': '🇵🇹',
-    'Qatar': '🇶🇦',
-    'Saudi Arabia': '🇸🇦',
-    'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-    'Senegal': '🇸🇳',
-    'South Africa': '🇿🇦',
-    'Spain': '🇪🇸',
-    'Sweden': '🇸🇪',
-    'Switzerland': '🇨🇭',
-    'Tunisia': '🇹🇳',
-    'Turkey': '🇹🇷',
-    'USA': '🇺🇸',
-    'Ukraine': '🇺🇦',
-    'Uruguay': '🇺🇾',
-    'Uzbekistan': '🇺🇿',
-    'Wales': '🏴󠁧󠁢󠁷󠁬󠁳󠁿',
-  }
-  return flags[countryName] || '🏳️'
-}
 
 export function GroupRankCard({
   groupLetter,
@@ -185,7 +129,7 @@ export function GroupRankCard({
                 }}
                 className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:border-fifa-blue hover:bg-blue-50"
               >
-                <span>{getFlagEmoji(team.name)}</span>
+                <span>{getFlag(team.name)}</span>
                 <span>{team.name}</span>
               </button>
             ))}

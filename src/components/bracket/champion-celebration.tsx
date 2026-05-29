@@ -1,5 +1,6 @@
 'use client'
 
+import { getFlag } from '@/lib/flags'
 import type { Team, Group } from '@/types'
 
 interface Props {
@@ -41,7 +42,10 @@ export function ChampionCelebration({ champion, championId, groups, compact }: P
         <div className="text-3xl">🏆</div>
         <div>
           <p className="text-xs text-fifa-gold uppercase tracking-wider">Tu campeón</p>
-          <p className="text-xl font-bold text-white">{champion?.name || 'Seleccionado'}</p>
+          <p className="text-xl font-bold text-white flex items-center gap-2">
+            {champion && <span>{getFlag(champion.name)}</span>}
+            {champion?.name || 'Seleccionado'}
+          </p>
         </div>
       </div>
     )
@@ -60,7 +64,10 @@ export function ChampionCelebration({ champion, championId, groups, compact }: P
         <p className="text-xl text-gray-300 mb-2">
           Tu campeón del Mundial 2026:
         </p>
-        <p className="text-4xl font-black text-white mb-4">{championName}</p>
+        <p className="text-4xl font-black text-white mb-4 flex items-center justify-center gap-3">
+          <span>{getFlag(championName)}</span>
+          {championName}
+        </p>
         <p className="text-sm text-gray-400">
           Tus pronósticos han sido guardados. Vuelve cuando termine el torneo para ver los resultados.
         </p>
