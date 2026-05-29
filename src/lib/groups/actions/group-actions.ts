@@ -1,115 +1,106 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import crypto from 'crypto'
 
 function generateInviteCode(): string {
   return crypto.randomBytes(4).toString('hex').toUpperCase()
 }
 
+function generateUUID(): string {
+  return crypto.randomUUID()
+}
+
 export async function createGroup(name: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) throw new Error('Not authenticated')
 
+  const pool = getPool()
   const inviteCode = generateInviteCode()
+  const groupId = generateUUID()
 
-  const { data: group, error } = await supabase
-    .from('user_groups')
-    .insert({
-      name,
-      invite_code: inviteCode,
-      created_by: user.id,
-    })
-    .select()
-    .single()
+  await pool.execute(
+    'INSERT INTO user_groups (id, name, invite_code, created_by) VALUES (?, ?, ?, ?)',
+    [groupId, name, inviteCode, user.id],
+  )
 
-  if (error) throw new Error(error.message)
+  await pool.execute(
+    'INSERT INTO user_group_members (id, group_id, user_id) VALUES (?, ?, ?)',
+    [generateUUID(), groupId, user.id],
+  )
 
-  await supabase
-    .from('user_group_members')
-    .insert({
-      group_id: group.id,
-      user_id: user.id,
-    })
-
-  return { success: true, group, inviteCode }
+  return { success: true, group: { id: groupId, name, invite_code: inviteCode }, inviteCode }
 }
 
 export async function joinGroup(inviteCode: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { data: group } = await supabase
-    .from('user_groups')
-    .select('id')
-    .eq('invite_code', inviteCode)
-    .single()
+  const pool = getPool()
+  const [groupRows] = await pool.execute(
+    'SELECT id FROM user_groups WHERE invite_code = ?',
+    [inviteCode],
+  )
+  const groups = groupRows as any[]
+  if (groups.length === 0) throw new Error('Código de invitación inválido')
 
-  if (!group) throw new Error('Código de invitación inválido')
+  const group = groups[0]
+  const [existingRows] = await pool.execute(
+    'SELECT id FROM user_group_members WHERE group_id = ? AND user_id = ?',
+    [group.id, user.id],
+  )
+  const existing = existingRows as any[]
+  if (existing.length > 0) throw new Error('Ya eres miembro de este grupo')
 
-  const { data: existing } = await supabase
-    .from('user_group_members')
-    .select('id')
-    .eq('group_id', group.id)
-    .eq('user_id', user.id)
-    .single()
+  await pool.execute(
+    'INSERT INTO user_group_members (id, group_id, user_id) VALUES (?, ?, ?)',
+    [generateUUID(), group.id, user.id],
+  )
 
-  if (existing) throw new Error('Ya eres miembro de este grupo')
-
-  const { error } = await supabase
-    .from('user_group_members')
-    .insert({
-      group_id: group.id,
-      user_id: user.id,
-    })
-
-  if (error) throw new Error(error.message)
   return { success: true }
 }
 
 export async function leaveGroup(groupId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { error } = await supabase
-    .from('user_group_members')
-    .delete()
-    .eq('group_id', groupId)
-    .eq('user_id', user.id)
+  const pool = getPool()
+  await pool.execute(
+    'DELETE FROM user_group_members WHERE group_id = ? AND user_id = ?',
+    [groupId, user.id],
+  )
 
-  if (error) throw new Error(error.message)
   return { success: true }
 }
 
 export async function getUserGroups() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) return []
 
-  const { data: memberships } = await supabase
-    .from('user_group_members')
-    .select('group_id')
-    .eq('user_id', user.id)
+  const pool = getPool()
+  const [memberRows] = await pool.execute(
+    'SELECT group_id FROM user_group_members WHERE user_id = ?',
+    [user.id],
+  )
+  const memberships = memberRows as any[]
+  if (memberships.length === 0) return []
 
-  if (!memberships || memberships.length === 0) return []
+  const groupIds = memberships.map((m: any) => m.group_id)
+  const placeholders = groupIds.map(() => '?').join(',')
+  const [groupRows] = await pool.execute(
+    `SELECT * FROM user_groups WHERE id IN (${placeholders}) ORDER BY created_at DESC`,
+    groupIds,
+  )
+  const groups = groupRows as any[]
 
-  const groupIds = memberships.map(m => m.group_id)
-
-  const { data: groups } = await supabase
-    .from('user_groups')
-    .select('*')
-    .in('id', groupIds)
-    .order('created_at', { ascending: false })
-
-  const result: (UserGroupItem)[] = []
-  for (const g of groups || []) {
-    const { count } = await supabase
-      .from('user_group_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('group_id', g.id)
+  const result: UserGroupItem[] = []
+  for (const g of groups) {
+    const [countRows] = await pool.execute(
+      'SELECT COUNT(*) as count FROM user_group_members WHERE group_id = ?',
+      [g.id],
+    )
+    const count = (countRows as any[])[0]?.count || 0
 
     result.push({
       id: g.id,
@@ -117,7 +108,7 @@ export async function getUserGroups() {
       invite_code: g.invite_code,
       created_by: g.created_by,
       created_at: g.created_at,
-      memberCount: count || 0,
+      memberCount: count,
     })
   }
 
@@ -134,25 +125,30 @@ interface UserGroupItem {
 }
 
 export async function getGroupMembers(groupId: string) {
-  const supabase = await createClient()
+  const pool = getPool()
 
-  const { data: members } = await supabase
-    .from('user_group_members')
-    .select('*, profiles(*)')
-    .eq('group_id', groupId)
+  const [rows] = await pool.execute(
+    `SELECT m.*, u.display_name, u.avatar_url
+     FROM user_group_members m
+     JOIN users u ON u.id = m.user_id
+     WHERE m.group_id = ?`,
+    [groupId],
+  )
 
-  return members || []
+  return rows as any[]
 }
 
 export async function getGroupStandings(groupId: string, tournamentId: string) {
-  const supabase = await createClient()
+  const pool = getPool()
 
-  const { data: standings } = await supabase
-    .from('standings')
-    .select('*, profiles(*)')
-    .eq('user_group_id', groupId)
-    .eq('tournament_id', tournamentId)
-    .order('total_points', { ascending: false })
+  const [rows] = await pool.execute(
+    `SELECT s.*, u.display_name, u.avatar_url
+     FROM standings s
+     JOIN users u ON u.id = s.user_id
+     WHERE s.user_group_id = ? AND s.tournament_id = ?
+     ORDER BY s.total_points DESC`,
+    [groupId, tournamentId],
+  )
 
-  return standings || []
+  return rows as any[]
 }

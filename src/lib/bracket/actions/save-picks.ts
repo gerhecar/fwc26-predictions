@@ -1,6 +1,7 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import type { BracketPicks } from '@/lib/bracket/bracket-picks'
 
 export async function saveBracketPicks(
@@ -8,38 +9,31 @@ export async function saveBracketPicks(
   picks: BracketPicks,
   championId: string | null,
 ) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { error } = await supabase
-    .from('predictions')
-    .update({
-      bracket_predictions: picks as unknown as Record<string, unknown>,
-      champion_id: championId,
-    })
-    .eq('user_id', user.id)
-    .eq('tournament_id', tournamentId)
-
-  if (error) throw new Error(error.message)
+  const pool = getPool()
+  await pool.execute(
+    `UPDATE predictions
+     SET bracket_predictions = ?, champion_id = ?
+     WHERE user_id = ? AND tournament_id = ?`,
+    [JSON.stringify(picks), championId, user.id, tournamentId],
+  )
 
   return { success: true }
 }
 
 export async function submitPredictions(tournamentId: string) {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { error } = await supabase
-    .from('predictions')
-    .update({ status: 'submitted' })
-    .eq('user_id', user.id)
-    .eq('tournament_id', tournamentId)
-
-  if (error) throw new Error(error.message)
+  const pool = getPool()
+  await pool.execute(
+    `UPDATE predictions
+     SET status = 'submitted'
+     WHERE user_id = ? AND tournament_id = ?`,
+    [user.id, tournamentId],
+  )
 
   return { success: true }
 }

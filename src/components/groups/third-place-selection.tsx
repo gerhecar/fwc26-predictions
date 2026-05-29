@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { getCurrentUser } from '@/lib/auth/client'
+import { loadUserPredictions, saveThirdPlacePicks } from '@/lib/predictions/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { Group, Team, GroupLetter } from '@/types'
@@ -22,22 +23,17 @@ export function ThirdPlaceSelection({ groups, tournamentId, predictions }: Props
   const [selected, setSelected] = useState<GroupLetter[]>([])
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     async function loadSaved() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
-      const { data } = await supabase
-        .from('predictions')
-        .select('third_place_qualified')
-        .eq('user_id', user.id)
-        .not('third_place_qualified', 'is', null)
-        .limit(1)
+      const data = await loadUserPredictions()
 
-      if (data?.[0]?.third_place_qualified) {
-        setSelected(data[0].third_place_qualified as GroupLetter[])
+      const pred = data.find((p: any) => p.third_place_qualified && p.third_place_qualified.length > 0)
+      if (pred?.third_place_qualified) {
+        setSelected(pred.third_place_qualified as GroupLetter[])
         setSaved(true)
       }
     }
@@ -60,23 +56,11 @@ export function ThirdPlaceSelection({ groups, tournamentId, predictions }: Props
     setSaving(true)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
-      const { data: userPredictions } = await supabase
-        .from('predictions')
-        .select('id')
-        .eq('user_id', user.id)
-
-      if (userPredictions && userPredictions.length > 0) {
-        const ids = userPredictions.map((p) => p.id)
-        const { error } = await supabase
-          .from('predictions')
-          .update({ third_place_qualified: selected })
-          .in('id', ids)
-
-        if (!error) setSaved(true)
-      }
+      await saveThirdPlacePicks(selected as string[])
+      setSaved(true)
     } finally {
       setSaving(false)
     }

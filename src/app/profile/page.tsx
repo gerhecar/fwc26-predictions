@@ -1,20 +1,20 @@
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, signOut } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/layout/app-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
 export default async function ProfilePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const user = await getCurrentUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const pool = getPool()
+  const [rows] = await pool.execute(
+    'SELECT display_name, avatar_url, role FROM users WHERE id = ?',
+    [user.id],
+  )
+  const profile = (rows as any[])[0]
 
   return (
     <AppShell>
@@ -40,8 +40,7 @@ export default async function ProfilePage() {
         <form
           action={async () => {
             'use server'
-            const supabase = await createClient()
-            await supabase.auth.signOut()
+            await signOut()
             redirect('/auth/login')
           }}
         >

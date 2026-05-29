@@ -122,6 +122,35 @@ export interface AnnexCEntry {
   assignments: AnnexCAssignment[]
 }
 
+export interface AdminUser {
+  id: string
+  email: string
+  display_name: string
+  avatar_url: string | null
+  role: UserRole
+  is_active: boolean
+  created_at: string
+  last_login_at: string | null
+  prediction_count?: number
+}
+
+export interface AdminUserListResponse {
+  users: AdminUser[]
+  total: number
+  page: number
+  totalPages: number
+}
+
+export interface AdminUserListParams {
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: 'created_at' | 'display_name' | 'email' | 'role'
+  sortOrder?: 'asc' | 'desc'
+  roleFilter?: 'user' | 'admin' | 'all'
+  statusFilter?: 'active' | 'inactive' | 'all'
+}
+
 export interface BracketMatch {
   id: number
   stage: MatchStage

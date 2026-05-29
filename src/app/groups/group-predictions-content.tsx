@@ -1,7 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { getCurrentUser } from '@/lib/auth/client'
+import {
+  loadGroupsWithTeams,
+  loadUserPredictions,
+  saveGroupPrediction,
+} from '@/lib/predictions/actions'
 import { GroupRankCard } from '@/components/groups/group-rank-card'
 import { ThirdPlaceSelection } from '@/components/groups/third-place-selection'
 import { Button } from '@/components/ui/button'
@@ -20,34 +25,26 @@ export function GroupPredictionsContent() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) return
 
-      const { data: groupsData } = await supabase
-        .from('groups')
-        .select('*, teams(*)')
-        .order('letter')
-        .returns<GroupWithTeams[]>()
+      const groupsData = await loadGroupsWithTeams() as GroupWithTeams[]
 
-      if (!groupsData) {
+      if (!groupsData || groupsData.length === 0) {
         setLoading(false)
         return
       }
 
-      const { data: predictionsData } = await supabase
-        .from('predictions')
-        .select('*')
-        .eq('user_id', user.id)
+      const predictionsData = await loadUserPredictions()
 
       setGroups(groupsData)
 
       const predictionMap: Record<string, GroupPrediction> = {}
       for (const p of predictionsData || []) {
-        const group = groupsData.find((g) => g.id === p.group_id)
+        const group = groupsData.find((g: GroupWithTeams) => g.id === p.group_id)
         if (group) {
           predictionMap[group.letter] = p
         }
@@ -140,7 +137,7 @@ export function GroupPredictionsContent() {
     setError(null)
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const user = await getCurrentUser()
       if (!user) {
         setError('Debes iniciar sesión')
         return
@@ -157,31 +154,14 @@ export function GroupPredictionsContent() {
         if (selected.length !== 4) continue
 
         const saved = savedPredictionRows[group.letter]
+        const teamIds = selected.map((t) => t.id)
 
-        const payload = {
-          user_id: user.id,
-          tournament_id: tournamentId,
-          group_id: group.id,
-          first_place_team_id: selected[0].id,
-          second_place_team_id: selected[1].id,
-          third_place_team_id: selected[2].id,
-          fourth_place_team_id: selected[3].id,
-        }
-
-        if (saved) {
-          const { error: updateError } = await supabase
-            .from('predictions')
-            .update(payload)
-            .eq('id', saved.id)
-
-          if (updateError) throw updateError
-        } else {
-          const { error: insertError } = await supabase
-            .from('predictions')
-            .insert(payload)
-
-          if (insertError) throw insertError
-        }
+        await saveGroupPrediction(
+          group.id,
+          tournamentId,
+          teamIds,
+          saved?.id,
+        )
       }
 
       setSaved(true)

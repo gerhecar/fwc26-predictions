@@ -1,32 +1,59 @@
 @import "tailwindcss";
 
 @theme {
-  --color-fifa-blue: #1a237e;
-  --color-fifa-gold: #ffd700;
-  --color-fifa-navy: #0d1b3e;
+  --color-fifa-blue: #2979ff;
+  --color-fifa-navy: #0a0e1a;
+  --color-fifa-dark: #0d1b3e;
+  --color-fifa-green: #00e676;
+  --color-fifa-gold: #ffd740;
+  --color-fifa-red: #ff1744;
   --color-fifa-white: #f8f9fa;
-  --color-fifa-green: #2e7d32;
-  --color-fifa-red: #c62828;
-  --color-surface: #ffffff;
-  --color-surface-secondary: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #64748b;
+  --color-surface: #0a0e1a;
+  --color-surface-secondary: #111827;
+  --color-surface-card: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.2);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #94a3b8;
+  --color-accent-green: #00e676;
+  --color-accent-gold: #ffd740;
+  --color-accent-muted: #546e7a;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(0, 230, 118, 0.15); }
+  50% { box-shadow: 0 0 24px rgba(0, 230, 118, 0.3); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes confetti-fall {
-  0% {
-    transform: translateY(-10vh) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(110vh) rotate(720deg);
-    opacity: 0;
-  }
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 
 .animate-confetti {
   animation: confetti-fall 3s ease-in forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }
 
 html {
@@ -35,10 +62,4 @@ html {
 
 body {
   @apply bg-surface text-text-primary font-sans antialiased;
-}
-
-@media (prefers-color-scheme: dark) {
-  body {
-    @apply bg-fifa-navy text-fifa-white;
-  }
 }

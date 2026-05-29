@@ -1,27 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import { AppShell } from '@/components/layout/app-shell'
 import { AdminResultsPanel } from '@/components/admin/results-panel'
 
 export default async function AdminResultsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  await requireAdmin()
+  const pool = getPool()
 
-  if (!user) redirect('/auth/login')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') redirect('/dashboard')
-
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('slug', 'world-cup-2026')
-    .single()
+  const [tournamentRows] = await pool.execute(
+    "SELECT * FROM tournaments WHERE slug = 'fifa-world-cup-2026'",
+  )
+  const tournament = (tournamentRows as any[])[0]
 
   if (!tournament) {
     return (

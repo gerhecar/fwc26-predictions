@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { signUp } from '@/lib/auth/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -14,12 +14,13 @@ export default function RegisterPage() {
   const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setSuccess(false)
 
     if (password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres')
@@ -28,30 +29,21 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { display_name: displayName },
-      },
-    })
+    const { user, error: authError } = await signUp(email, password, displayName)
 
     if (authError) {
-      setError(authError.message)
+      setError(authError)
       setLoading(false)
       return
     }
 
-    if (authData.user) {
-      await supabase.from('profiles').insert({
-        id: authData.user.id,
-        display_name: displayName,
-        role: 'user',
-      })
+    if (user) {
+      setSuccess(true)
+      setTimeout(() => {
+        router.push('/dashboard')
+        router.refresh()
+      }, 1000)
     }
-
-    router.push('/dashboard')
-    router.refresh()
   }
 
   return (
@@ -92,9 +84,18 @@ export default function RegisterPage() {
             <p className="text-sm text-fifa-red">{error}</p>
           )}
 
-          <Button type="submit" loading={loading} className="w-full">
-            Crear cuenta
-          </Button>
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
+              <p className="text-green-500 font-semibold">¡Cuenta creada!</p>
+              <p className="text-sm text-gray-300 mt-1">Redirigiendo al inicio...</p>
+            </div>
+          )}
+
+          {!success && (
+            <Button type="submit" loading={loading} className="w-full">
+              Crear cuenta
+            </Button>
+          )}
         </form>
 
         <p className="mt-4 text-center text-sm text-text-secondary">

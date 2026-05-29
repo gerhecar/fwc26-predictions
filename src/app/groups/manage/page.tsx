@@ -1,11 +1,10 @@
+import { getCurrentUser } from '@/lib/auth/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { GroupManager } from '@/components/groups/group-manager'
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
 export default async function GroupsManagePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
   if (!user) redirect('/auth/login')
 
   return (

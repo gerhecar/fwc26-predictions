@@ -1,45 +1,31 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { requireAdmin } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import { AppShell } from '@/components/layout/app-shell'
 import { AdminDashboard } from '@/components/admin/admin-dashboard'
 import Link from 'next/link'
 
 export default async function AdminPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  await requireAdmin()
+  const pool = getPool()
 
-  if (!user) redirect('/auth/login')
+  const [tournamentRows] = await pool.execute(
+    "SELECT * FROM tournaments WHERE slug = 'fifa-world-cup-2026'",
+  )
+  const tournament = (tournamentRows as any[])[0]
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const [userCountRows] = await pool.execute('SELECT COUNT(*) as count FROM users')
+  const userCount = (userCountRows as any[])[0]?.count || 0
 
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  const [predictionCountRows] = await pool.execute('SELECT COUNT(*) as count FROM predictions')
+  const predictionCount = (predictionCountRows as any[])[0]?.count || 0
 
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('slug', 'world-cup-2026')
-    .single()
+  const [submittedRows] = await pool.execute(
+    "SELECT COUNT(*) as count FROM predictions WHERE status = 'submitted'",
+  )
+  const submittedCount = (submittedRows as any[])[0]?.count || 0
 
-  const { count: userCount } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: predictionCount } = await supabase
-    .from('predictions')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: submittedCount } = await supabase
-    .from('predictions')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'submitted')
-
-  const { count: groupCount } = await supabase
-    .from('user_groups')
-    .select('*', { count: 'exact', head: true })
+  const [groupCountRows] = await pool.execute('SELECT COUNT(*) as count FROM user_groups')
+  const groupCount = (groupCountRows as any[])[0]?.count || 0
 
   return (
     <AppShell>
@@ -48,19 +34,19 @@ export default async function AdminPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-            <p className="text-3xl font-bold text-white">{userCount ?? 0}</p>
+            <p className="text-3xl font-bold text-white">{userCount}</p>
             <p className="text-sm text-gray-400">Usuarios</p>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-            <p className="text-3xl font-bold text-white">{predictionCount ?? 0}</p>
+            <p className="text-3xl font-bold text-white">{predictionCount}</p>
             <p className="text-sm text-gray-400">Pronósticos</p>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-            <p className="text-3xl font-bold text-fifa-gold">{submittedCount ?? 0}</p>
+            <p className="text-3xl font-bold text-fifa-gold">{submittedCount}</p>
             <p className="text-sm text-gray-400">Enviados</p>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-            <p className="text-3xl font-bold text-white">{groupCount ?? 0}</p>
+            <p className="text-3xl font-bold text-white">{groupCount}</p>
             <p className="text-sm text-gray-400">Grupos privados</p>
           </div>
         </div>
@@ -70,10 +56,18 @@ export default async function AdminPage() {
           tournamentId={tournament?.id || ''}
         />
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
+          <Link
+            href="/admin/users"
+            className="flex-1 min-w-[200px] bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all"
+          >
+            <div className="text-2xl mb-2">👥</div>
+            <h3 className="font-semibold text-white">Usuarios</h3>
+            <p className="text-sm text-gray-400">Gestionar usuarios registrados</p>
+          </Link>
           <Link
             href="/admin/results"
-            className="flex-1 bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all"
+            className="flex-1 min-w-[200px] bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all"
           >
             <div className="text-2xl mb-2">📋</div>
             <h3 className="font-semibold text-white">Cargar resultados</h3>

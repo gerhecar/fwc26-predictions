@@ -1,27 +1,68 @@
-import { createClient } from '@/lib/supabase/server'
+import { getPool } from '@/lib/db/pool'
 import type { Group, Team } from '@/types'
 
 export async function getTournamentGroups(tournamentId: string): Promise<(Group & { teams: Team[] })[]> {
-  const supabase = await createClient()
+  const pool = getPool()
 
-  const { data: groups } = await supabase
-    .from('groups')
-    .select('*, teams(*)')
-    .eq('tournament_id', tournamentId)
-    .order('letter')
-    .returns<(Group & { teams: Team[] })[]>()
+  const [groupRows] = await pool.execute(
+    'SELECT * FROM `groups` WHERE tournament_id = ? ORDER BY letter',
+    [tournamentId],
+  )
+  const groups = groupRows as any[]
 
-  return groups || []
+  const result: (Group & { teams: Team[] })[] = []
+
+  for (const g of groups) {
+    const [teamRows] = await pool.execute(
+      'SELECT * FROM teams WHERE group_id = ?',
+      [g.id],
+    )
+    result.push({
+      id: g.id,
+      tournament_id: g.tournament_id,
+      letter: g.letter,
+      name: g.name,
+      teams: teamRows as Team[],
+    })
+  }
+
+  return result
 }
 
 export async function getUserGroupPredictions(userId: string, tournamentId: string) {
-  const supabase = await createClient()
+  const pool = getPool()
 
-  const { data } = await supabase
-    .from('predictions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('tournament_id', tournamentId)
+  const [rows] = await pool.execute(
+    'SELECT * FROM predictions WHERE user_id = ? AND tournament_id = ?',
+    [userId, tournamentId],
+  )
 
-  return data || []
+  const predictions = (rows as any[]).map((p) => ({
+    ...p,
+    third_place_qualified: p.third_place_qualified
+      ? JSON.parse(p.third_place_qualified)
+      : null,
+    bracket_predictions: p.bracket_predictions
+      ? JSON.parse(p.bracket_predictions)
+      : null,
+  }))
+
+  return predictions
+}
+
+export async function getUserPredictions(userId: string): Promise<any[]> {
+  const pool = getPool()
+  const [rows] = await pool.execute(
+    'SELECT * FROM predictions WHERE user_id = ?',
+    [userId],
+  )
+  return (rows as any[]).map((p) => ({
+    ...p,
+    third_place_qualified: p.third_place_qualified
+      ? JSON.parse(p.third_place_qualified)
+      : null,
+    bracket_predictions: p.bracket_predictions
+      ? JSON.parse(p.bracket_predictions)
+      : null,
+  }))
 }

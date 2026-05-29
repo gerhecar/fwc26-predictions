@@ -1,16 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import { AppShell } from '@/components/layout/app-shell'
 import { RankingsView, type StandingWithProfile } from '@/components/rankings/rankings-view'
 
 export default async function RankingsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCurrentUser()
 
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('slug', 'world-cup-2026')
-    .single()
+  const pool = getPool()
+  const [tournamentRows] = await pool.execute(
+    "SELECT * FROM tournaments WHERE slug = 'fifa-world-cup-2026'",
+  )
+  const tournament = (tournamentRows as any[])[0]
 
   if (!tournament) {
     return (
@@ -20,42 +20,46 @@ export default async function RankingsPage() {
     )
   }
 
-  const { data: globalStandings } = await supabase
-    .from('standings')
-    .select('*, profiles(*)')
-    .is('user_group_id', null)
-    .eq('tournament_id', tournament.id)
-    .order('total_points', { ascending: false })
-    .limit(100)
+  const [globalRows] = await pool.execute(
+    `SELECT s.*, u.display_name, u.avatar_url
+     FROM standings s
+     JOIN users u ON u.id = s.user_id
+     WHERE s.user_group_id IS NULL AND s.tournament_id = ?
+     ORDER BY s.total_points DESC
+     LIMIT 100`,
+    [tournament.id],
+  )
+  const globalStandings = globalRows as StandingWithProfile[]
 
   let userGroups: { id: string; name: string }[] = []
   let groupStandings: Record<string, StandingWithProfile[]> = {}
 
   if (user) {
-    const { data: memberships } = await supabase
-      .from('user_group_members')
-      .select('group_id')
-      .eq('user_id', user.id)
+    const [memberRows] = await pool.execute(
+      'SELECT group_id FROM user_group_members WHERE user_id = ?',
+      [user.id],
+    )
+    const memberships = memberRows as any[]
 
-    if (memberships && memberships.length > 0) {
-      const groupIds = memberships.map(m => m.group_id)
-
-      const { data: groups } = await supabase
-        .from('user_groups')
-        .select('id, name')
-        .in('id', groupIds)
-
-      userGroups = groups || []
+    if (memberships.length > 0) {
+      const groupIds = memberships.map((m: any) => m.group_id)
+      const placeholders = groupIds.map(() => '?').join(',')
+      const [groupRows] = await pool.execute(
+        `SELECT id, name FROM user_groups WHERE id IN (${placeholders})`,
+        groupIds,
+      )
+      userGroups = groupRows as { id: string; name: string }[]
 
       for (const g of userGroups) {
-        const { data: standings } = await supabase
-          .from('standings')
-          .select('*, profiles(*)')
-          .eq('user_group_id', g.id)
-          .eq('tournament_id', tournament.id)
-          .order('total_points', { ascending: false })
-
-        groupStandings[g.id] = standings || []
+        const [sRows] = await pool.execute(
+          `SELECT s.*, u.display_name, u.avatar_url
+           FROM standings s
+           JOIN users u ON u.id = s.user_id
+           WHERE s.user_group_id = ? AND s.tournament_id = ?
+           ORDER BY s.total_points DESC`,
+          [g.id, tournament.id],
+        )
+        groupStandings[g.id] = sRows as StandingWithProfile[]
       }
     }
   }

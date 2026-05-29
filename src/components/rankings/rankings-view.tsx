@@ -10,11 +10,8 @@ export interface StandingWithProfile {
   total_points: number
   rank: number
   calculated_at: string
-  profiles: {
-    id: string
-    display_name: string
-    avatar_url: string | null
-  } | null
+  display_name?: string
+  avatar_url?: string | null
 }
 
 interface UserGroup {
@@ -69,7 +66,7 @@ function StandingsTable({ standings, currentUserId, title }: {
               </div>
               <div className="flex-1 min-w-0">
                 <p className={`font-medium truncate ${isMe ? 'text-fifa-gold' : 'text-white'}`}>
-                  {s.profiles?.display_name || 'Usuario'}
+                  {s.display_name || 'Usuario'}
                   {isMe && <span className="text-xs text-fifa-gold ml-2">(tú)</span>}
                 </p>
               </div>

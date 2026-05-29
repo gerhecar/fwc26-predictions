@@ -1,20 +1,20 @@
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/layout/app-shell'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const user = await getCurrentUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, role')
-    .eq('id', user.id)
-    .single()
+  const pool = getPool()
+  const [rows] = await pool.execute(
+    'SELECT display_name, role FROM users WHERE id = ?',
+    [user.id],
+  )
+  const profile = (rows as any[])[0]
 
   return (
     <AppShell>
@@ -27,7 +27,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Link href="/groups">
+          <Link href="/predictions">
             <Card className="cursor-pointer transition-shadow hover:shadow-md">
               <div className="text-3xl">📋</div>
               <h3 className="mt-2 font-semibold">Predicción de Grupos</h3>

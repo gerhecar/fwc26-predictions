@@ -1,29 +1,18 @@
 import { AppShell } from '@/components/layout/app-shell'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/auth'
+import { getPool } from '@/lib/db/pool'
 import { getTournamentGroups, getUserGroupPredictions } from '@/lib/groups/queries'
 import { BracketView } from '@/components/bracket/bracket-view'
 import type { GroupLetter } from '@/types'
 
 export default async function BracketPage() {
-  const supabase = await createClient()
+  const user = await getCurrentUser()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return (
-      <AppShell>
-        <p className="text-text-secondary">Inicia sesión para ver tu bracket.</p>
-      </AppShell>
-    )
-  }
-
-  const { data: tournament } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('slug', 'world-cup-2026')
-    .single()
+  const pool = getPool()
+  const [tournamentRows] = await pool.execute(
+    "SELECT * FROM tournaments WHERE slug = 'fifa-world-cup-2026'",
+  )
+  const tournament = (tournamentRows as any[])[0]
 
   if (!tournament) {
     return (
@@ -35,9 +24,11 @@ export default async function BracketPage() {
 
   const groups = await getTournamentGroups(tournament.id)
 
-  const predictions = await getUserGroupPredictions(user.id, tournament.id)
+  const predictions = user
+    ? await getUserGroupPredictions(user.id, tournament.id)
+    : []
 
-  const thirdPlacePrediction = predictions.find((p) => p.third_place_qualified && p.third_place_qualified.length > 0)
+  const thirdPlacePrediction = predictions.find((p) => p.third_place_qualified && (p.third_place_qualified as string[]).length > 0)
   const thirdPlaceGroups: GroupLetter[] = thirdPlacePrediction
     ? (thirdPlacePrediction.third_place_qualified as GroupLetter[])
     : []
