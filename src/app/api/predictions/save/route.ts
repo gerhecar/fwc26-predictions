@@ -16,9 +16,10 @@ export async function POST(request: Request) {
       groupPredictions: Record<string, string[]>
       thirdPlaceSelection: string[]
       bracketPicks: Record<number, string>
+      betName: string
     } = await request.json()
 
-    const { groupPredictions, thirdPlaceSelection, bracketPicks } = body
+    const { groupPredictions, thirdPlaceSelection, bracketPicks, betName } = body
 
     if (!groupPredictions || typeof groupPredictions !== 'object') {
       return NextResponse.json({ error: 'groupPredictions requerido' }, { status: 400 })
@@ -29,10 +30,34 @@ export async function POST(request: Request) {
     if (!bracketPicks || typeof bracketPicks !== 'object') {
       return NextResponse.json({ error: 'bracketPicks requerido' }, { status: 400 })
     }
+    if (!betName || typeof betName !== 'string' || betName.trim().length === 0) {
+      return NextResponse.json({ error: 'betName requerido' }, { status: 400 })
+    }
 
     const champion = bracketPicks[104]
     if (!champion) {
       return NextResponse.json({ error: 'Debes seleccionar un campeón' }, { status: 400 })
+    }
+
+    const pool = getPool()
+
+    // Count existing bets for this user
+    const [countRows] = await pool.execute(
+      'SELECT COUNT(*) AS cnt FROM bet_submissions WHERE user_id = ?',
+      [user.id],
+    )
+    const existingCount = (countRows as Array<{ cnt: number }>)[0]?.cnt ?? 0
+    if (existingCount >= 2) {
+      return NextResponse.json({ error: 'Máximo 2 apuestas por usuario' }, { status: 400 })
+    }
+
+    // Check unique bet_name per user
+    const [dupRows] = await pool.execute(
+      'SELECT id FROM bet_submissions WHERE user_id = ? AND bet_name = ?',
+      [user.id, betName.trim()],
+    )
+    if ((dupRows as Array<unknown>).length > 0) {
+      return NextResponse.json({ error: 'Ya tienes una apuesta con ese nombre' }, { status: 409 })
     }
 
     const predictionId = crypto.randomUUID()
@@ -41,16 +66,16 @@ export async function POST(request: Request) {
       user.id,
       user.display_name,
       predictionId,
+      betName.trim(),
       groupPredictions,
       thirdPlaceSelection,
       bracketPicks,
     )
 
-    const pool = getPool()
     await pool.execute(
-      `INSERT INTO bet_submissions (id, user_id, prediction_json, champion_name, status)
-       VALUES (?, ?, ?, ?, 'submitted')`,
-      [predictionId, user.id, JSON.stringify(predictionJson), champion],
+      `INSERT INTO bet_submissions (id, user_id, bet_name, prediction_json, champion_name, status)
+       VALUES (?, ?, ?, ?, ?, 'submitted')`,
+      [predictionId, user.id, betName.trim(), JSON.stringify(predictionJson), champion],
     )
 
     const emailResult = await sendPredictionEmail(predictionJson)
@@ -79,6 +104,33 @@ export async function POST(request: Request) {
     console.error('Save prediction failed:', message)
     return NextResponse.json(
       { error: 'Error al guardar el pronóstico' },
+      { status: 500 },
+    )
+  }
+}
+
+export async function GET() {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
+
+    const pool = getPool()
+    const [rows] = await pool.execute(
+      `SELECT id, bet_name, champion_name, submitted_at
+       FROM bet_submissions
+       WHERE user_id = ?
+       ORDER BY submitted_at DESC`,
+      [user.id],
+    )
+
+    return NextResponse.json({ bets: rows })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Error desconocido'
+    console.error('Fetch user bets failed:', message)
+    return NextResponse.json(
+      { error: 'Error al obtener apuestas' },
       { status: 500 },
     )
   }

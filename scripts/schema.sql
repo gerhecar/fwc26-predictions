@@ -134,13 +134,25 @@ CREATE TABLE IF NOT EXISTS standings (
 CREATE TABLE IF NOT EXISTS bet_submissions (
   id VARCHAR(36) PRIMARY KEY,
   user_id VARCHAR(36) NOT NULL,
+  bet_name VARCHAR(255) NOT NULL,
   prediction_json JSON NOT NULL,
   champion_name VARCHAR(255) DEFAULT NULL,
   status ENUM('submitted') NOT NULL DEFAULT 'submitted',
   email_sent BOOLEAN NOT NULL DEFAULT FALSE,
   email_error VARCHAR(500) DEFAULT NULL,
   submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_user_bet_name (user_id, bet_name),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS official_results (
+  id VARCHAR(36) PRIMARY KEY,
+  tournament_id VARCHAR(36) NOT NULL,
+  results_json JSON NOT NULL,
+  status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+  updated_by VARCHAR(36) DEFAULT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
 );
 
 -- INDEXES

@@ -5,7 +5,7 @@ export async function sendPredictionEmail(
   data: PredictionExport,
 ): Promise<{ success: boolean; error?: string }> {
   const recipient = 'german.herrero@bull.com'
-  const subject = `[World Cup Prediction] New Submitted Bet - ${data.user.display_name}`
+  const subject = `[World Cup Prediction] New Bet - ${data.user.display_name} - ${data.betName}`
 
   const jsonContent = JSON.stringify(data, null, 2)
 
@@ -27,10 +27,10 @@ export async function sendPredictionEmail(
         from: user,
         to: recipient,
         subject,
-        text: `Prediction submitted by ${data.user.display_name} (${data.user.id}) at ${data.submittedAt}\n\nPrediction ID: ${data.predictionId}\nChampion: ${data.champion}\n\nSee attached JSON for full details.`,
+        text: `Prediction submitted by ${data.user.display_name} (${data.user.id}) at ${data.submittedAt}\n\nBet Name: ${data.betName}\nPrediction ID: ${data.predictionId}\nChampion: ${data.champion}\n\nSee attached JSON for full details.`,
         attachments: [
           {
-            filename: `prediction-${data.user.display_name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`,
+            filename: `bet-${data.user.display_name.toLowerCase().replace(/\s+/g, '-')}-${data.betName.toLowerCase().replace(/\s+/g, '-')}.json`,
             content: jsonContent,
             contentType: 'application/json',
           },

@@ -4,6 +4,7 @@ export interface PredictionExport {
     display_name: string
   }
   predictionId: string
+  betName: string
   groupStage: Record<string, string[]>
   bestThirdPlaced: string[]
   knockout: Record<number, string>
@@ -15,6 +16,7 @@ export function generatePredictionJson(
   userId: string,
   displayName: string,
   predictionId: string,
+  betName: string,
   groupPredictions: Record<string, string[]>,
   thirdPlaceSelection: string[],
   bracketPicks: Record<number, string>,
@@ -25,6 +27,7 @@ export function generatePredictionJson(
       display_name: displayName,
     },
     predictionId,
+    betName,
     groupStage: { ...groupPredictions },
     bestThirdPlaced: [...thirdPlaceSelection],
     knockout: Object.fromEntries(

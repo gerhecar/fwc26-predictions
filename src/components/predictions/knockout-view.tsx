@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useCallback, useState } from 'react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
 import { usePredictionsStore, getThirdPlaceTeam } from '@/lib/predictions/store'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
@@ -253,8 +253,42 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState<{ predictionId: string } | null>(null)
 
-  const handleSaveBet = useCallback(async () => {
-    if (!allPicksComplete || submitted || submitting) return
+  // Lock body scroll when success overlay is visible
+  useEffect(() => {
+    if (saveSuccess) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      window.scrollTo(0, 0)
+      return () => { document.body.style.overflow = prev }
+    }
+  }, [saveSuccess])
+
+  // Bet name modal
+  const [existingBets, setExistingBets] = useState<Array<{ id: string; bet_name: string; champion_name: string; submitted_at: string }>>([])
+  const [showNameModal, setShowNameModal] = useState(false)
+  const [betName, setBetName] = useState('')
+  const [nameError, setNameError] = useState<string | null>(null)
+  const [betsMaxed, setBetsMaxed] = useState(false)
+  const [fetched, setFetched] = useState(false)
+
+  useEffect(() => {
+    if (fetched) return
+    fetch('/api/predictions/save')
+      .then(r => r.json())
+      .then(data => {
+        setFetched(true)
+        if (data.bets) {
+          setExistingBets(data.bets)
+          if (data.bets.length >= 2) {
+            setBetsMaxed(true)
+          }
+        }
+      })
+      .catch(() => setFetched(true))
+  }, [fetched])
+
+  const performSave = useCallback(async (name: string) => {
+    if (!allPicksComplete || submitted || submitting || betsMaxed) return
     setSubmitting(true)
     setSubmitError(null)
     try {
@@ -265,6 +299,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
           groupPredictions,
           thirdPlaceSelection,
           bracketPicks,
+          betName: name,
         }),
       })
       const data = await res.json()
@@ -273,13 +308,46 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
       }
       setSubmitted(true)
       setSaveSuccess({ predictionId: data.predictionId })
+      setBetName(name)
+      setExistingBets(prev => [...prev, {
+        id: data.predictionId,
+        bet_name: name,
+        champion_name: champion ?? '',
+        submitted_at: data.submittedAt,
+      }])
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al guardar el pronóstico'
       setSubmitError(message)
     } finally {
       setSubmitting(false)
     }
-  }, [allPicksComplete, submitted, submitting, groupPredictions, thirdPlaceSelection, bracketPicks, setSubmitted])
+  }, [allPicksComplete, submitted, submitting, betsMaxed, groupPredictions, thirdPlaceSelection, bracketPicks, setSubmitted, champion])
+
+  const handleSaveBet = useCallback(() => {
+    if (!allPicksComplete || submitted || submitting || betsMaxed) return
+    setSubmitError(null)
+    setNameError(null)
+    setShowNameModal(true)
+  }, [allPicksComplete, submitted, submitting, betsMaxed])
+
+  const confirmBetName = useCallback(() => {
+    const trimmed = betName.trim()
+    if (!trimmed) {
+      setNameError('El nombre es obligatorio')
+      return
+    }
+    if (trimmed.length < 3) {
+      setNameError('Mínimo 3 caracteres')
+      return
+    }
+    if (existingBets.some(b => b.bet_name.toLowerCase() === trimmed.toLowerCase())) {
+      setNameError('Ya tienes una apuesta con ese nombre')
+      return
+    }
+    setNameError(null)
+    setShowNameModal(false)
+    performSave(trimmed)
+  }, [betName, existingBets, performSave])
 
   return (
     <div className="relative flex flex-col gap-6 animate-fade-in">
@@ -301,6 +369,32 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
           Selecciona el ganador de cada partido. Completa la llave para definir tu campeón.
         </p>
       </div>
+
+      {betsMaxed && !submitted && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center">
+          <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-red-400">
+            LÍMITE ALCANZADO
+          </p>
+          <p className="mt-1 text-sm text-text-secondary">
+            Ya has creado 2 apuestas. No puedes crear más.
+          </p>
+        </div>
+      )}
+
+      {existingBets.length > 0 && (
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <p className="font-[family-name:var(--font-bebas)] text-sm tracking-wide text-text-secondary">
+            TUS APUESTAS ({existingBets.length}/2)
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {existingBets.map(b => (
+              <span key={b.id} className="rounded-full border border-accent-green/20 bg-accent-green/5 px-3 py-1 text-xs text-accent-green">
+                {b.bet_name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <button
@@ -331,32 +425,39 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         </div>
       )}
 
-      {champion && submitted && saveSuccess && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center animate-fade-in">
+      {saveSuccess && (
+        <section
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+          style={{ height: '100dvh', width: '100dvw' }}
+        >
           <div
             className="absolute inset-0"
             style={{
               backgroundImage: `url(${Trump.src})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
             }}
           />
           <div className="absolute inset-0 bg-[#0a0e1a]/60" />
-          <div className="relative z-10 flex flex-col items-center gap-6 px-4 text-center">
-            <p
-              className="text-5xl leading-tight tracking-wide text-fifa-gold sm:text-7xl lg:text-8xl drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)]"
-              style={{ fontFamily: 'var(--font-bebas)' }}
+          <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-6 text-center max-w-4xl">
+            <h1
+              className="font-[family-name:var(--font-bebas)] text-fifa-gold drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] leading-none"
+              style={{ fontSize: 'clamp(2.25rem, 7vw, 7rem)' }}
             >
               MAKE PORRA GREAT AGAIN
-            </p>
-            <p className="text-lg text-white/80 drop-shadow-md">
-              <CountryFlag name={champion} width={24} className="inline-block -mt-0.5" /> {champion}
-            </p>
-            <p className="text-sm text-text-secondary drop-shadow-md">
+            </h1>
+            {champion && (
+              <p className="flex items-center gap-2 text-base sm:text-lg md:text-xl text-white/80 drop-shadow-md">
+                <CountryFlag name={champion} width={24} className="shrink-0" />
+                {champion}
+              </p>
+            )}
+            <p className="text-xs sm:text-sm text-text-secondary drop-shadow-md">
               ID: {saveSuccess.predictionId.slice(0, 8)}... — Ya no puedes modificar tu pronóstico.
             </p>
           </div>
-        </div>
+        </section>
       )}
 
       <BracketLayout
@@ -369,20 +470,68 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
 
       {!submitted && (
         <div className="flex justify-center pt-4 border-t border-white/10">
-          <button
-            onClick={handleSaveBet}
-            disabled={!allPicksComplete || submitting}
-            className="relative rounded-full bg-accent-green px-12 py-4 text-base font-bold tracking-wide text-black transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
-          >
-            {submitting ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                ENVIANDO...
-              </span>
-            ) : (
-              'SAVE BET'
+          {betsMaxed ? (
+            <div className="text-center">
+              <p className="text-sm text-text-secondary">Límite de 2 apuestas alcanzado</p>
+            </div>
+          ) : (
+            <button
+              onClick={handleSaveBet}
+              disabled={!allPicksComplete || submitting}
+              className="relative rounded-full bg-accent-green px-12 py-4 text-base font-bold tracking-wide text-black transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+            >
+              {submitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                  ENVIANDO...
+                </span>
+              ) : (
+                'SAVE BET'
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Bet name modal */}
+      {showNameModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setShowNameModal(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0e1a] p-6 shadow-2xl">
+            <p className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white">
+              NOMBRA TU APUESTA
+            </p>
+            <p className="mt-1 text-sm text-text-secondary">
+              Ponle un nombre único a tu apuesta (ej: "Mi Porra #1")
+            </p>
+            <input
+              type="text"
+              value={betName}
+              onChange={e => { setBetName(e.target.value); setNameError(null) }}
+              placeholder="Ej: Mi Pronóstico 1"
+              className="mt-4 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-text-secondary outline-none transition-colors focus:border-accent-green"
+              autoFocus
+              onKeyDown={e => { if (e.key === 'Enter') confirmBetName() }}
+            />
+            {nameError && (
+              <p className="mt-2 text-sm text-red-400">{nameError}</p>
             )}
-          </button>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => { setShowNameModal(false); setNameError(null) }}
+                className="flex-1 rounded-full border border-white/20 px-5 py-2.5 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
+              >
+                CANCELAR
+              </button>
+              <button
+                onClick={confirmBetName}
+                disabled={submitting}
+                className="flex-1 rounded-full bg-accent-green px-5 py-2.5 text-xs font-bold tracking-wide text-black transition-all duration-200 hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-50"
+              >
+                {submitting ? 'GUARDANDO...' : 'CONFIRMAR'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
