@@ -13,8 +13,11 @@ while ! node -e "
   sleep 2
 done
 
+echo "Running migrations..."
+node scripts/migrate.js
+
 echo "Running seed..."
 node scripts/seed.js
 
 echo "Starting Next.js..."
-exec node node_modules/.bin/next start -p 3000
+exec node server.js

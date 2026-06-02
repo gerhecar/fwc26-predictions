@@ -1,7 +1,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -19,15 +19,18 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Standalone output
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Scripts needed at runtime
 COPY --chown=nextjs:nodejs /app/scripts ./scripts
-COPY --chown=nextjs:nodejs /app/src/lib ./src/lib
-COPY --chown=nextjs:nodejs /app/src/types ./src/types
 
 USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "scripts/seed.js"]
+ENV PORT=3000
+
+CMD ["node", "scripts/docker-start.sh"]

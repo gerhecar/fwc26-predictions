@@ -6,4 +6,6 @@ node_modules
 .env
 .env.local
 .env.example
+.env.production
 issues/
+__tests__/
