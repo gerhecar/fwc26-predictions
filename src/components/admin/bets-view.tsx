@@ -19,13 +19,13 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  submitted: 'Pendiente',
-  valid: 'Válida',
-  deleted: 'Eliminada',
+  submitted: 'Pending',
+  valid: 'Valid',
+  deleted: 'Deleted',
 }
 
 function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString('es-ES', {
+  return new Date(d).toLocaleDateString('en-US', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -122,7 +122,7 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
       <BackToAdmin />
 
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">Gestión de Apuestas</h1>
+        <h1 className="text-2xl font-bold text-text-primary">Bet Management</h1>
         <p className="mt-1 text-sm text-text-secondary">
           {data.total} apuesta{data.total !== 1 ? 's' : ''} registrada{data.total !== 1 ? 's' : ''}
         </p>
@@ -141,7 +141,7 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
           type="text"
           value={searchInput}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Buscar por nombre de apuesta o usuario..."
+          placeholder="Search by bet name or user..."
           className="w-full rounded-lg border border-border bg-white px-4 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-fifa-blue focus:outline-none sm:max-w-xs"
         />
 
@@ -151,10 +151,10 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
             onChange={(e) => updateParam('status', e.target.value)}
             className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-fifa-blue focus:outline-none"
           >
-            <option value="all">Todos los estados</option>
-            <option value="submitted">Pendientes</option>
-            <option value="valid">Válidas</option>
-            <option value="deleted">Eliminadas</option>
+            <option value="all">All statuses</option>
+            <option value="submitted">Pending</option>
+            <option value="valid">Valid</option>
+            <option value="deleted">Deleted</option>
           </select>
         </div>
       </div>
@@ -167,23 +167,23 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
                 className="cursor-pointer px-4 py-3 font-semibold"
                 onClick={() => handleSort('bet_name')}
               >
-                Apuesta <SortIcon active={params.sortBy === 'bet_name'} direction={params.sortOrder as 'asc' | 'desc'} />
+                Bet <SortIcon active={params.sortBy === 'bet_name'} direction={params.sortOrder as 'asc' | 'desc'} />
               </th>
-              <th className="px-4 py-3 font-semibold">Usuario</th>
+              <th className="px-4 py-3 font-semibold">User</th>
               <th
                 className="cursor-pointer px-4 py-3 font-semibold"
                 onClick={() => handleSort('status')}
               >
-                Estado <SortIcon active={params.sortBy === 'status'} direction={params.sortOrder as 'asc' | 'desc'} />
+                Status <SortIcon active={params.sortBy === 'status'} direction={params.sortOrder as 'asc' | 'desc'} />
               </th>
-              <th className="px-4 py-3 font-semibold">Campeón</th>
+              <th className="px-4 py-3 font-semibold">Champion</th>
               <th
                 className="cursor-pointer px-4 py-3 font-semibold"
                 onClick={() => handleSort('submitted_at')}
               >
-                Fecha <SortIcon active={params.sortBy === 'submitted_at'} direction={params.sortOrder as 'asc' | 'desc'} />
+                Date <SortIcon active={params.sortBy === 'submitted_at'} direction={params.sortOrder as 'asc' | 'desc'} />
               </th>
-              <th className="px-4 py-3 font-semibold">Acciones</th>
+              <th className="px-4 py-3 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -200,7 +200,7 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
             ) : data.bets.length === 0 ? (
               <tr className="border-t border-border">
                 <td colSpan={6} className="px-4 py-12 text-center text-text-secondary">
-                  No se encontraron apuestas
+                  No bets found
                 </td>
               </tr>
             ) : (
@@ -228,14 +228,14 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
                         href={`/admin/bets/${bet.id}`}
                         className="rounded px-2 py-1 text-xs font-medium text-fifa-blue hover:bg-blue-50"
                       >
-                        Ver
+                        View
                       </Link>
                       {bet.status === 'submitted' && (
                         <button
                           onClick={() => handleValidate(bet.id)}
                           className="rounded px-2 py-1 text-xs font-medium text-green-600 hover:bg-green-50"
                         >
-                          Validar
+                          Validate
                         </button>
                       )}
                       {bet.status !== 'deleted' && (
@@ -243,7 +243,7 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
                           onClick={() => setConfirmDelete({ id: bet.id, name: bet.bet_name })}
                           className="rounded px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-50"
                         >
-                          Eliminar
+                          Delete
                         </button>
                       )}
                     </div>
@@ -273,7 +273,7 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
               disabled={data.page <= 1}
               className="rounded-lg border border-border px-3 py-1.5 text-sm text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Anterior
+              Previous
             </button>
             <span className="text-sm text-text-secondary">
               Página {data.page} de {data.totalPages}
@@ -283,7 +283,7 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
               disabled={data.page >= data.totalPages}
               className="rounded-lg border border-border px-3 py-1.5 text-sm text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Siguiente
+              Next
             </button>
           </div>
         </div>
@@ -292,22 +292,22 @@ export function AdminBetsView({ initialData, initialParams }: Props) {
       {confirmDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-text-primary">Eliminar apuesta</h3>
+            <h3 className="text-lg font-bold text-text-primary">Delete bet</h3>
             <p className="mt-2 text-sm text-text-secondary">
-              ¿Eliminar permanentemente la apuesta <strong>{confirmDelete.name}</strong>? Esta acción no se puede deshacer.
+              Permanently delete the bet <strong>{confirmDelete.name}</strong>? This action cannot be undone.
             </p>
             <div className="mt-4 flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmDelete(null)}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-primary hover:bg-gray-50"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
               >
-                Sí, eliminar
+                Yes, delete
               </button>
             </div>
           </div>

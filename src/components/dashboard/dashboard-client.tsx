@@ -82,7 +82,7 @@ export function DashboardClient({ displayName }: { displayName: string }) {
       if (!res.ok) throw new Error(data.error || 'Error')
       if (data.invitation?.inviteUrl) {
         await navigator.clipboard.writeText(data.invitation.inviteUrl)
-        setActionMsg({ slot: betSlot, type: 'ok', text: 'Link copiado al portapapeles' })
+        setActionMsg({ slot: betSlot, type: 'ok',         text: 'Link copied to clipboard' })
       }
       loadData()
     } catch (err) {
@@ -100,7 +100,7 @@ export function DashboardClient({ displayName }: { displayName: string }) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error')
-      setActionMsg({ slot: betSlot, type: 'ok', text: 'Invitación revocada' })
+      setActionMsg({ slot: betSlot, type: 'ok', text: 'Invitation revoked' })
       loadData()
     } catch (err) {
       setActionMsg({ slot: betSlot, type: 'err', text: err instanceof Error ? err.message : 'Error' })
@@ -116,7 +116,7 @@ export function DashboardClient({ displayName }: { displayName: string }) {
     // For simplicity, regenerate the link using the stored info.
     // Actually, the token is stored in the generate response but not in the list endpoint.
     // Let's regenerate to get a fresh link.
-    setActionMsg({ slot: betSlot, type: 'ok', text: 'Regenera el link desde el botón Generar' })
+      setActionMsg({ slot: betSlot, type: 'ok', text: 'Regenerate the link from the Generate button' })
   }, [getSlotInvitation])
 
   const slots = [
@@ -128,21 +128,21 @@ export function DashboardClient({ displayName }: { displayName: string }) {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white">
-          Bienvenido, {displayName}
+          Welcome, {displayName}
         </h1>
-        <p className="text-text-secondary text-sm">Mundial FIFA 2026</p>
+        <p className="text-text-secondary text-sm">FIFA World Cup 2026</p>
       </div>
 
       {/* My Predictions section */}
       <div>
         <h2 className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white mb-4">
-          MIS APUESTAS
+          MY BETS
         </h2>
 
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-text-secondary">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent-green border-t-transparent" />
-            Cargando...
+            Loading...
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -159,18 +159,18 @@ export function DashboardClient({ displayName }: { displayName: string }) {
                             {bet.bet_name}
                           </p>
                           <p className="text-[11px] text-text-secondary mt-0.5">
-                            {new Date(bet.submitted_at).toLocaleDateString('es-ES', {
+                            {new Date(bet.submitted_at)    .toLocaleDateString('en-US', {
                               year: 'numeric', month: 'short', day: 'numeric'
                             })}
                           </p>
                         </div>
                         <span className="rounded-full border border-accent-green/30 bg-accent-green/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-accent-green">
-                          {bet.submitted_via_invitation ? 'INVITADO' : 'ENVIADO'}
+                          {bet.submitted_via_invitation ? 'GUEST' : 'SUBMITTED'}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <CountryFlag name={bet.champion_name} width={20} className="shrink-0" />
-                        <span className="text-text-secondary">Campeón:</span>
+                        <span className="text-text-secondary">Champion:</span>
                         <span className="text-white">{bet.champion_name}</span>
                       </div>
                       <button
@@ -196,7 +196,7 @@ export function DashboardClient({ displayName }: { displayName: string }) {
                           <p className="font-[family-name:var(--font-bebas)] text-base tracking-wide text-white">
                             BET {slot}
                           </p>
-                          <p className="text-xs text-text-secondary mt-0.5">Crear nueva apuesta</p>
+                          <p className="text-xs text-text-secondary mt-0.5">Create new bet</p>
                         </div>
                         <span className="rounded-full bg-accent-green px-6 py-1.5 text-xs font-bold tracking-wide text-black mt-1">
                           CREATE BET
@@ -207,20 +207,20 @@ export function DashboardClient({ displayName }: { displayName: string }) {
                         {inv ? (
                           <div className="flex flex-col gap-2">
                             <span className="text-[10px] text-accent-green/80 font-bold tracking-wide uppercase">
-                              ✓ Invitación activa
+                              ✓ Active invitation
                             </span>
                             <div className="flex gap-2">
                               <button
                                 onClick={() => generateInvitation(slot)}
                                 className="flex-1 rounded-full border border-accent-green/30 px-3 py-1.5 text-[10px] font-bold tracking-wide text-accent-green transition-all hover:bg-accent-green/10"
                               >
-                                REGENERAR
+                                REGENERATE
                               </button>
                               <button
                                 onClick={() => revokeInvitation(inv.id, slot)}
                                 className="flex-1 rounded-full border border-red-500/30 px-3 py-1.5 text-[10px] font-bold tracking-wide text-red-400 transition-all hover:bg-red-500/10"
                               >
-                                REVOCAR
+                                REVOKE
                               </button>
                             </div>
                           </div>
@@ -229,7 +229,7 @@ export function DashboardClient({ displayName }: { displayName: string }) {
                             onClick={() => generateInvitation(slot)}
                             className="w-full rounded-full border border-white/20 px-3 py-2 text-[10px] font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
                           >
-                            + GENERAR INVITACIÓN
+                            + GENERATE INVITATION
                           </button>
                         )}
                       </div>
@@ -255,7 +255,7 @@ export function DashboardClient({ displayName }: { displayName: string }) {
             <div className="text-3xl">🏅</div>
             <h3 className="mt-2 font-semibold text-white">Leaderboard</h3>
             <p className="mt-1 text-sm text-text-secondary">
-              Ranking de apuestas con puntajes provisorios
+              Bet rankings with provisional scores
             </p>
           </Card>
         </button>
@@ -263,16 +263,16 @@ export function DashboardClient({ displayName }: { displayName: string }) {
         <button onClick={() => router.push('/rules')} className="text-left">
           <Card className="transition-all hover:border-white/30">
             <div className="text-3xl">📋</div>
-            <h3 className="mt-2 font-semibold text-white">Reglas & Puntuaci&oacute;n</h3>
+            <h3 className="mt-2 font-semibold text-white">Rules & Scoring</h3>
             <p className="mt-1 text-sm text-text-secondary">
-              Sistema de puntuaci&oacute;n, desempates y reglas
+              Scoring system, tiebreakers and rules
             </p>
           </Card>
         </button>
       </div>
 
       <div className="text-center text-xs text-text-secondary">
-        Máximo 2 apuestas por usuario
+        Maximum 2 bets per user
       </div>
     </div>
   )

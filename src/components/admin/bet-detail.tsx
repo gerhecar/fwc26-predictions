@@ -32,14 +32,14 @@ const STATUS_BADGE: Record<string, string> = {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  submitted: 'Pendiente',
-  valid: 'Válida',
-  deleted: 'Eliminada',
+  submitted: 'Pending',
+  valid: 'Valid',
+  deleted: 'Deleted',
 }
 
 function formatDate(d: string | null): string {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('es-ES', {
+  return new Date(d).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
@@ -83,7 +83,7 @@ export function AdminBetDetail({ bet }: Props) {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">{bet.betName}</h1>
           <p className="mt-1 text-sm text-text-secondary">
-            por {bet.displayName} · {formatDate(bet.submittedAt)}
+            by {bet.displayName} · {formatDate(bet.submittedAt)}
           </p>
         </div>
         <span className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${STATUS_BADGE[bet.status]}`}>
@@ -101,36 +101,36 @@ export function AdminBetDetail({ bet }: Props) {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs font-medium text-text-secondary">ID Apuesta</p>
+          <p className="text-xs font-medium text-text-secondary">Bet ID</p>
           <p className="mt-0.5 text-sm text-text-primary font-mono">{bet.id.slice(0, 8)}...</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs font-medium text-text-secondary">Usuario</p>
+          <p className="text-xs font-medium text-text-secondary">User</p>
           <p className="mt-0.5 text-sm text-text-primary">{bet.displayName}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs font-medium text-text-secondary">Campeón</p>
+          <p className="text-xs font-medium text-text-secondary">Champion</p>
           <p className="mt-0.5 text-sm text-text-primary">{bet.champion || '—'}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs font-medium text-text-secondary">Validada el</p>
+          <p className="text-xs font-medium text-text-secondary">Validated on</p>
           <p className="mt-0.5 text-sm text-text-primary">{formatDate(bet.validatedAt)}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs font-medium text-text-secondary">Validada por</p>
+          <p className="text-xs font-medium text-text-secondary">Validated by</p>
           <p className="mt-0.5 text-sm text-text-primary">{bet.validatedBy || '—'}</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4">
-          <p className="text-xs font-medium text-text-secondary">Email enviado</p>
+          <p className="text-xs font-medium text-text-secondary">Email sent</p>
           <p className="mt-0.5 text-sm text-text-primary">
-            {bet.emailSent ? 'Sí' : 'No'}
+            {bet.emailSent ? 'Yes' : 'No'}
             {bet.emailError && <span className="ml-2 text-red-600">({bet.emailError})</span>}
           </p>
         </div>
       </div>
 
       <div className="rounded-xl border border-border bg-surface p-4">
-        <h2 className="mb-3 text-lg font-semibold text-text-primary">Predicción completa</h2>
+        <h2 className="mb-3 text-lg font-semibold text-text-primary">Full Prediction</h2>
         <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-xs text-green-400">
           {JSON.stringify(bet.prediction, null, 2)}
         </pre>
@@ -143,7 +143,7 @@ export function AdminBetDetail({ bet }: Props) {
             disabled={working}
             className="rounded-lg bg-green-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50"
           >
-            {working ? 'Validando...' : 'Validar Apuesta'}
+            {working ? 'Validating...' : 'Validate Bet'}
           </button>
         )}
 
@@ -155,12 +155,12 @@ export function AdminBetDetail({ bet }: Props) {
                 disabled={working}
                 className="rounded-lg border border-red-200 px-6 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
               >
-                Eliminar Apuesta
+                Delete Bet
               </button>
             ) : (
               <div className="rounded-lg border border-red-200 bg-red-50 p-4">
                 <p className="mb-3 text-sm font-medium text-red-700">
-                  ¿Eliminar permanentemente esta apuesta? Esta acción no se puede deshacer.
+                  Permanently delete this bet? This action cannot be undone.
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -168,14 +168,14 @@ export function AdminBetDetail({ bet }: Props) {
                     disabled={working}
                     className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
                   >
-                    {working ? 'Eliminando...' : 'Sí, eliminar'}
+                    {working ? 'Deleting...' : 'Yes, delete'}
                   </button>
                   <button
                     onClick={() => setConfirmDelete(false)}
                     disabled={working}
                     className="rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-text-primary hover:bg-gray-50 disabled:opacity-50"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                 </div>
               </div>

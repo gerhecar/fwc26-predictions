@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation'
 import { getDashboardRoute } from '@/lib/auth/routes'
 
 const navItems = [
-  { href: '/predictions', label: 'Grupos', icon: '📋' },
+  { href: '/predictions', label: 'Groups', icon: '📋' },
   { href: '/bracket', label: 'Knockout', icon: '🏆' },
-  { href: '/rankings', label: 'Tabla', icon: '📊' },
-  { href: '/profile', label: 'Perfil', icon: '👤' },
+  { href: '/rankings', label: 'Rankings', icon: '📊' },
+  { href: '/profile', label: 'Profile', icon: '👤' },
 ]
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -38,10 +38,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-border bg-surface px-4 py-3">
           <div className="mx-auto flex max-w-6xl items-center justify-between">
             <Link href="/admin" className="text-sm font-semibold text-fifa-blue">
-              Panel Admin
+              Admin Panel
             </Link>
             <Link href="/admin" className="text-sm text-text-secondary hover:text-text-primary">
-              Volver al inicio
+              Back to home
             </Link>
           </div>
         </header>
@@ -60,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             }`}
           >
             <span className="text-lg md:text-base">🏠</span>
-            <span>Inicio</span>
+            <span>Home</span>
           </Link>
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')

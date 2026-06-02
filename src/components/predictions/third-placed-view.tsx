@@ -42,7 +42,7 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
     return (
       <div className="flex flex-col items-center gap-4 py-12 text-center">
         <p className="text-text-secondary">
-          Completa la predicción de todos los grupos primero.
+          Complete all group predictions first.
         </p>
       </div>
     )
@@ -68,16 +68,16 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
       <div className="fixed inset-0 -z-10 bg-[#0a0e1a]/70 backdrop-blur-[2px]" />
       <div className="border-b border-white/10 pb-5">
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
-          TERCEROS LUGARES
+          THIRD PLACES
         </h1>
         <p className="mt-2 text-sm text-text-secondary max-w-2xl">
-          Selecciona exactamente 8 grupos cuyos terceros lugares avanzarán a octavos de final.
+          Select exactly 8 groups whose third-placed teams will advance to the Round of 32.
         </p>
       </div>
 
       <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
         <span className="text-sm font-medium text-text-secondary">
-          Grupos seleccionados
+          Selected groups
         </span>
         <span
           className={`text-xl font-bold font-[family-name:var(--font-bebas)] tracking-wide transition-colors ${
@@ -113,7 +113,7 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
                   isSelected ? 'text-accent-green' : 'text-text-secondary group-hover:text-white'
                 }`}
               >
-                GRUPO {letter}
+                GROUP {letter}
               </span>
               {thirdTeam && (
                 <span className="flex flex-col items-center gap-1">
@@ -130,7 +130,7 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="2 7 5.5 10.5 12 4" />
                   </svg>
-                  Avanza
+                  Advances
                 </span>
               )}
             </button>
@@ -144,7 +144,7 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
             onClick={onBack}
             className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
           >
-            ← EDITAR GRUPOS
+            ← EDIT GROUPS
           </button>
         )}
         <button
@@ -157,8 +157,8 @@ export function ThirdPlacedView({ onBack, onSaveAndContinue }: ThirdPlacedViewPr
           }`}
         >
           {selectedCount === 8
-            ? 'GUARDAR Y CONTINUAR AL KNOCKOUT'
-            : `SELECCIONA ${8 - selectedCount} MÁS`}
+            ? 'SAVE AND CONTINUE TO KNOCKOUT'
+            : `SELECT ${8 - selectedCount} MORE`}
         </button>
       </div>
     </div>

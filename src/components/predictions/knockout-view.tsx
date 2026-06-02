@@ -6,7 +6,7 @@ import { CountryFlag } from '@/components/ui/country-flag'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
 import { BracketLayout } from './bracket-layout'
 import type { GroupLetter } from '@/types'
-import BG from '@/images/finals.jpg'
+import BG from '@/images/campo.avif'
 import Trump from '@/images/trump.jpg'
 
 interface MatchSlot {
@@ -19,25 +19,25 @@ interface MatchSlot {
 }
 
 const R32_FIXED: Record<number, { homeLabel: string; awayLabel: string; homeGroup?: { pos: 'winner' | 'runner_up'; letter: string }; awayGroup?: { pos: 'winner' | 'runner_up'; letter: string } }> = {
-  73: { homeLabel: '2° Grupo A', awayLabel: '2° Grupo B', homeGroup: { pos: 'runner_up', letter: 'A' }, awayGroup: { pos: 'runner_up', letter: 'B' } },
-  75: { homeLabel: '1° Grupo F', awayLabel: '2° Grupo C', homeGroup: { pos: 'winner', letter: 'F' }, awayGroup: { pos: 'runner_up', letter: 'C' } },
-  76: { homeLabel: '1° Grupo C', awayLabel: '2° Grupo F', homeGroup: { pos: 'winner', letter: 'C' }, awayGroup: { pos: 'runner_up', letter: 'F' } },
-  78: { homeLabel: '2° Grupo E', awayLabel: '2° Grupo I', homeGroup: { pos: 'runner_up', letter: 'E' }, awayGroup: { pos: 'runner_up', letter: 'I' } },
-  83: { homeLabel: '2° Grupo K', awayLabel: '2° Grupo L', homeGroup: { pos: 'runner_up', letter: 'K' }, awayGroup: { pos: 'runner_up', letter: 'L' } },
-  84: { homeLabel: '1° Grupo H', awayLabel: '2° Grupo J', homeGroup: { pos: 'winner', letter: 'H' }, awayGroup: { pos: 'runner_up', letter: 'J' } },
-  86: { homeLabel: '1° Grupo J', awayLabel: '2° Grupo H', homeGroup: { pos: 'winner', letter: 'J' }, awayGroup: { pos: 'runner_up', letter: 'H' } },
-  88: { homeLabel: '2° Grupo D', awayLabel: '2° Grupo G', homeGroup: { pos: 'runner_up', letter: 'D' }, awayGroup: { pos: 'runner_up', letter: 'G' } },
+  73: { homeLabel: '2nd Group A', awayLabel: '2nd Group B', homeGroup: { pos: 'runner_up', letter: 'A' }, awayGroup: { pos: 'runner_up', letter: 'B' } },
+  75: { homeLabel: '1st Group F', awayLabel: '2nd Group C', homeGroup: { pos: 'winner', letter: 'F' }, awayGroup: { pos: 'runner_up', letter: 'C' } },
+  76: { homeLabel: '1st Group C', awayLabel: '2nd Group F', homeGroup: { pos: 'winner', letter: 'C' }, awayGroup: { pos: 'runner_up', letter: 'F' } },
+  78: { homeLabel: '2nd Group E', awayLabel: '2nd Group I', homeGroup: { pos: 'runner_up', letter: 'E' }, awayGroup: { pos: 'runner_up', letter: 'I' } },
+  83: { homeLabel: '2nd Group K', awayLabel: '2nd Group L', homeGroup: { pos: 'runner_up', letter: 'K' }, awayGroup: { pos: 'runner_up', letter: 'L' } },
+  84: { homeLabel: '1st Group H', awayLabel: '2nd Group J', homeGroup: { pos: 'winner', letter: 'H' }, awayGroup: { pos: 'runner_up', letter: 'J' } },
+  86: { homeLabel: '1st Group J', awayLabel: '2nd Group H', homeGroup: { pos: 'winner', letter: 'J' }, awayGroup: { pos: 'runner_up', letter: 'H' } },
+  88: { homeLabel: '2nd Group D', awayLabel: '2nd Group G', homeGroup: { pos: 'runner_up', letter: 'D' }, awayGroup: { pos: 'runner_up', letter: 'G' } },
 }
 
 const R32_THIRD_META = [
-  { matchNumber: 74, homeLabel: '1° Grupo E', homeGroup: { pos: 'winner' as const, letter: 'E' } },
-  { matchNumber: 77, homeLabel: '1° Grupo I', homeGroup: { pos: 'winner' as const, letter: 'I' } },
-  { matchNumber: 79, homeLabel: '1° Grupo A', homeGroup: { pos: 'winner' as const, letter: 'A' } },
-  { matchNumber: 80, homeLabel: '1° Grupo L', homeGroup: { pos: 'winner' as const, letter: 'L' } },
-  { matchNumber: 81, homeLabel: '1° Grupo D', homeGroup: { pos: 'winner' as const, letter: 'D' } },
-  { matchNumber: 82, homeLabel: '1° Grupo G', homeGroup: { pos: 'winner' as const, letter: 'G' } },
-  { matchNumber: 85, homeLabel: '1° Grupo B', homeGroup: { pos: 'winner' as const, letter: 'B' } },
-  { matchNumber: 87, homeLabel: '1° Grupo K', homeGroup: { pos: 'winner' as const, letter: 'K' } },
+  { matchNumber: 74, homeLabel: '1st Group E', homeGroup: { pos: 'winner' as const, letter: 'E' } },
+  { matchNumber: 77, homeLabel: '1st Group I', homeGroup: { pos: 'winner' as const, letter: 'I' } },
+  { matchNumber: 79, homeLabel: '1st Group A', homeGroup: { pos: 'winner' as const, letter: 'A' } },
+  { matchNumber: 80, homeLabel: '1st Group L', homeGroup: { pos: 'winner' as const, letter: 'L' } },
+  { matchNumber: 81, homeLabel: '1st Group D', homeGroup: { pos: 'winner' as const, letter: 'D' } },
+  { matchNumber: 82, homeLabel: '1st Group G', homeGroup: { pos: 'winner' as const, letter: 'G' } },
+  { matchNumber: 85, homeLabel: '1st Group B', homeGroup: { pos: 'winner' as const, letter: 'B' } },
+  { matchNumber: 87, homeLabel: '1st Group K', homeGroup: { pos: 'winner' as const, letter: 'K' } },
 ]
 
 const STAGE_ORDER = ['round_of_32', 'round_of_16', 'quarter_final', 'semi_final', 'final'] as const
@@ -151,7 +151,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         homeTeam: getTeam(info.homeGroup.pos, info.homeGroup.letter),
         awayTeam: thirdGroup ? getThird(thirdGroup) : null,
         homeLabel: info.homeLabel,
-        awayLabel: thirdGroup ? `3° Grupo ${thirdGroup}` : '3° lugar por definir',
+        awayLabel: thirdGroup ? `3rd Group ${thirdGroup}` : '3rd place TBD',
       })
     }
 
@@ -165,8 +165,8 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         stage: 'round_of_16',
         homeTeam: null,
         awayTeam: null,
-        homeLabel: `Ganador #${child1}`,
-        awayLabel: `Ganador #${child2}`,
+        homeLabel: `Winner #${child1}`,
+        awayLabel: `Winner #${child2}`,
       })
     }
 
@@ -179,8 +179,8 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         stage: 'quarter_final',
         homeTeam: null,
         awayTeam: null,
-        homeLabel: `Ganador #${child1}`,
-        awayLabel: `Ganador #${child2}`,
+        homeLabel: `Winner #${child1}`,
+        awayLabel: `Winner #${child2}`,
       })
     }
 
@@ -193,8 +193,8 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         stage: 'semi_final',
         homeTeam: null,
         awayTeam: null,
-        homeLabel: `Ganador #${child1}`,
-        awayLabel: `Ganador #${child2}`,
+        homeLabel: `Winner #${child1}`,
+        awayLabel: `Winner #${child2}`,
       })
     }
 
@@ -203,8 +203,8 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
       stage: 'final',
       homeTeam: null,
       awayTeam: null,
-      homeLabel: 'Ganador #101',
-      awayLabel: 'Ganador #102',
+      homeLabel: 'Winner #101',
+      awayLabel: 'Winner #102',
     })
 
     return matches.sort((a, b) => a.matchNumber - b.matchNumber)
@@ -304,7 +304,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
       })
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Error al guardar')
+        throw new Error(data.error || 'Error saving')
       }
       setSubmitted(true)
       setSaveSuccess({ predictionId: data.predictionId })
@@ -316,7 +316,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         submitted_at: data.submittedAt,
       }])
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al guardar el pronóstico'
+      const message = err instanceof Error ? err.message : 'Error saving prediction'
       setSubmitError(message)
     } finally {
       setSubmitting(false)
@@ -333,15 +333,15 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
   const confirmBetName = useCallback(() => {
     const trimmed = betName.trim()
     if (!trimmed) {
-      setNameError('El nombre es obligatorio')
+      setNameError('Name is required')
       return
     }
     if (trimmed.length < 3) {
-      setNameError('Mínimo 3 caracteres')
+      setNameError('Minimum 3 characters')
       return
     }
     if (existingBets.some(b => b.bet_name.toLowerCase() === trimmed.toLowerCase())) {
-      setNameError('Ya tienes una apuesta con ese nombre')
+      setNameError('You already have a bet with that name')
       return
     }
     setNameError(null)
@@ -366,17 +366,17 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
           KNOCKOUT STAGE
         </h1>
         <p className="mt-2 text-sm text-text-secondary max-w-2xl">
-          Selecciona el ganador de cada partido. Completa la llave para definir tu campeón.
+          Select the winner of each match. Complete the bracket to pick your champion.
         </p>
       </div>
 
       {betsMaxed && !submitted && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center">
           <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-red-400">
-            LÍMITE ALCANZADO
+            LIMIT REACHED
           </p>
           <p className="mt-1 text-sm text-text-secondary">
-            Ya has creado 2 apuestas. No puedes crear más.
+            You have already created 2 bets. You cannot create more.
           </p>
         </div>
       )}
@@ -384,7 +384,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
       {existingBets.length > 0 && (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <p className="font-[family-name:var(--font-bebas)] text-sm tracking-wide text-text-secondary">
-            TUS APUESTAS ({existingBets.length}/2)
+            YOUR BETS ({existingBets.length}/2)
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {existingBets.map(b => (
@@ -402,19 +402,19 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
           disabled={submitted}
           className="rounded-full border border-white/20 px-5 py-2 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          ← EDITAR GRUPOS
+          ← EDIT GROUPS
         </button>
         <button
           onClick={onEditThirdPlace}
           disabled={submitted}
           className="rounded-full border border-white/20 px-5 py-2 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          ← EDITAR 3° LUGARES
+          ← EDIT 3RD PLACES
         </button>
 
         {submitted && (
           <span className="rounded-full border border-accent-green/30 bg-accent-green/10 px-4 py-1.5 text-xs font-bold tracking-wide text-accent-green">
-            ✓ PRONÓSTICO ENVIADO
+            ✓ PREDICTION SUBMITTED
           </span>
         )}
       </div>
@@ -454,7 +454,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
               </p>
             )}
             <p className="text-xs sm:text-sm text-text-secondary drop-shadow-md">
-              ID: {saveSuccess.predictionId.slice(0, 8)}... — Ya no puedes modificar tu pronóstico.
+              ID: {saveSuccess.predictionId.slice(0, 8)}... — You can no longer modify your prediction.
             </p>
           </div>
         </section>
@@ -472,7 +472,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
         <div className="flex justify-center pt-4 border-t border-white/10">
           {betsMaxed ? (
             <div className="text-center">
-              <p className="text-sm text-text-secondary">Límite de 2 apuestas alcanzado</p>
+              <p className="text-sm text-text-secondary">Limit of 2 bets reached</p>
             </div>
           ) : (
             <button
@@ -483,7 +483,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
               {submitting ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                  ENVIANDO...
+                  SUBMITTING...
                 </span>
               ) : (
                 'SAVE BET'
@@ -499,16 +499,16 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowNameModal(false)} />
           <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0e1a] p-6 shadow-2xl">
             <p className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white">
-              NOMBRA TU APUESTA
+              NAME YOUR BET
             </p>
             <p className="mt-1 text-sm text-text-secondary">
-              Ponle un nombre único a tu apuesta (ej: "Mi Porra #1")
+              Give your bet a unique name (e.g. "My Bet #1")
             </p>
             <input
               type="text"
               value={betName}
               onChange={e => { setBetName(e.target.value); setNameError(null) }}
-              placeholder="Ej: Mi Pronóstico 1"
+              placeholder="E.g. My Prediction 1"
               className="mt-4 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-text-secondary outline-none transition-colors focus:border-accent-green"
               autoFocus
               onKeyDown={e => { if (e.key === 'Enter') confirmBetName() }}
@@ -521,14 +521,14 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
                 onClick={() => { setShowNameModal(false); setNameError(null) }}
                 className="flex-1 rounded-full border border-white/20 px-5 py-2.5 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
               >
-                CANCELAR
+                CANCEL
               </button>
               <button
                 onClick={confirmBetName}
                 disabled={submitting}
                 className="flex-1 rounded-full bg-accent-green px-5 py-2.5 text-xs font-bold tracking-wide text-black transition-all duration-200 hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-50"
               >
-                {submitting ? 'GUARDANDO...' : 'CONFIRMAR'}
+                {submitting ? 'SAVING...' : 'CONFIRM'}
               </button>
             </div>
           </div>

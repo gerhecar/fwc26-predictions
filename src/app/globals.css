@@ -61,5 +61,5 @@ html {
 }
 
 body {
-  @apply bg-surface text-text-primary font-sans antialiased;
+  @apply bg-surface text-text-primary;
 }

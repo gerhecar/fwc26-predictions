@@ -12,7 +12,7 @@ interface Props {
 
 function formatDate(d: string | null): string {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('es-ES', {
+  return new Date(d).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
@@ -84,27 +84,27 @@ export function UserDetailPanel({ user, onClose, onActionComplete }: Props) {
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-text-secondary">Rol</p>
+              <p className="text-xs font-medium text-text-secondary">Role</p>
               <span className={`mt-0.5 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                {user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                {user.role === 'admin' ? 'Administrator' : 'User'}
               </span>
             </div>
             <div>
-              <p className="text-xs font-medium text-text-secondary">Estado</p>
+              <p className="text-xs font-medium text-text-secondary">Status</p>
               <span className={`mt-0.5 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {user.is_active ? 'Activo' : 'Inactivo'}
+                {user.is_active ? 'Active' : 'Inactive'}
               </span>
             </div>
             <div>
-              <p className="text-xs font-medium text-text-secondary">Registrado</p>
+              <p className="text-xs font-medium text-text-secondary">Registered</p>
               <p className="mt-0.5 text-sm text-text-primary">{formatDate(user.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-text-secondary">Último acceso</p>
+              <p className="text-xs font-medium text-text-secondary">Last access</p>
               <p className="mt-0.5 text-sm text-text-primary">{formatDate(user.last_login_at)}</p>
             </div>
             <div>
-              <p className="text-xs font-medium text-text-secondary">Pronósticos</p>
+              <p className="text-xs font-medium text-text-secondary">Predictions</p>
               <p className="mt-0.5 text-sm text-text-primary">{user.prediction_count ?? 0}</p>
             </div>
           </div>
@@ -127,7 +127,7 @@ export function UserDetailPanel({ user, onClose, onActionComplete }: Props) {
                   : 'bg-green-50 text-green-700 hover:bg-green-100'
               } disabled:opacity-50`}
             >
-              {user.is_active ? 'Deshabilitar cuenta' : 'Habilitar cuenta'}
+              {user.is_active ? 'Disable account' : 'Enable account'}
             </button>
 
             <button
@@ -135,7 +135,7 @@ export function UserDetailPanel({ user, onClose, onActionComplete }: Props) {
               disabled={working}
               className="w-full rounded-lg bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
             >
-              {user.role === 'admin' ? 'Degradar a usuario' : 'Promover a administrador'}
+              {user.role === 'admin' ? 'Demote to user' : 'Promote to admin'}
             </button>
 
             {!confirmDelete ? (
@@ -144,12 +144,12 @@ export function UserDetailPanel({ user, onClose, onActionComplete }: Props) {
                 disabled={working}
                 className="w-full rounded-lg border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
               >
-                Eliminar cuenta
+                Delete account
               </button>
             ) : (
               <div className="rounded-lg border border-red-200 bg-red-50 p-4">
                 <p className="mb-3 text-sm font-medium text-red-700">
-                  ¿Eliminar permanentemente a {user.display_name}? Los pronósticos se conservarán anónimos. Esta acción no se puede deshacer.
+                  Permanently delete {user.display_name}? Predictions will be kept anonymous. This action cannot be undone.
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -157,14 +157,14 @@ export function UserDetailPanel({ user, onClose, onActionComplete }: Props) {
                     disabled={working}
                     className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
                   >
-                    {working ? 'Eliminando...' : 'Sí, eliminar'}
+                    {working ? 'Deleting...' : 'Yes, delete'}
                   </button>
                   <button
                     onClick={() => setConfirmDelete(false)}
                     disabled={working}
                     className="flex-1 rounded-lg border border-border bg-white px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-gray-50 disabled:opacity-50"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                 </div>
               </div>

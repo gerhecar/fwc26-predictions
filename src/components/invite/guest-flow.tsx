@@ -11,8 +11,8 @@ import type { GroupLetter } from '@/types'
 type Step = 'groups' | 'third-place' | 'knockout'
 
 const STEPS: { key: Step; label: string; num: number }[] = [
-  { key: 'groups', label: 'FASE DE GRUPOS', num: 1 },
-  { key: 'third-place', label: 'TERCEROS LUGARES', num: 2 },
+  { key: 'groups', label: 'GROUP STAGE', num: 1 },
+  { key: 'third-place', label: 'THIRD PLACES', num: 2 },
   { key: 'knockout', label: 'KNOCKOUT', num: 3 },
 ]
 
@@ -173,25 +173,25 @@ export function GuestFlow({ token }: GuestFlowProps) {
     }
 
     const R32_FIXED: Record<number, { homeLabel: string; awayLabel: string; homeGroup: { pos: 'winner' | 'runner_up'; letter: string }; awayGroup: { pos: 'winner' | 'runner_up'; letter: string } }> = {
-      73: { homeLabel: '2° Grupo A', awayLabel: '2° Grupo B', homeGroup: { pos: 'runner_up', letter: 'A' }, awayGroup: { pos: 'runner_up', letter: 'B' } },
-      75: { homeLabel: '1° Grupo F', awayLabel: '2° Grupo C', homeGroup: { pos: 'winner', letter: 'F' }, awayGroup: { pos: 'runner_up', letter: 'C' } },
-      76: { homeLabel: '1° Grupo C', awayLabel: '2° Grupo F', homeGroup: { pos: 'winner', letter: 'C' }, awayGroup: { pos: 'runner_up', letter: 'F' } },
-      78: { homeLabel: '2° Grupo E', awayLabel: '2° Grupo I', homeGroup: { pos: 'runner_up', letter: 'E' }, awayGroup: { pos: 'runner_up', letter: 'I' } },
-      83: { homeLabel: '2° Grupo K', awayLabel: '2° Grupo L', homeGroup: { pos: 'runner_up', letter: 'K' }, awayGroup: { pos: 'runner_up', letter: 'L' } },
-      84: { homeLabel: '1° Grupo H', awayLabel: '2° Grupo J', homeGroup: { pos: 'winner', letter: 'H' }, awayGroup: { pos: 'runner_up', letter: 'J' } },
-      86: { homeLabel: '1° Grupo J', awayLabel: '2° Grupo H', homeGroup: { pos: 'winner', letter: 'J' }, awayGroup: { pos: 'runner_up', letter: 'H' } },
-      88: { homeLabel: '2° Grupo D', awayLabel: '2° Grupo G', homeGroup: { pos: 'runner_up', letter: 'D' }, awayGroup: { pos: 'runner_up', letter: 'G' } },
+      73: { homeLabel: '2nd Group A', awayLabel: '2nd Group B', homeGroup: { pos: 'runner_up', letter: 'A' }, awayGroup: { pos: 'runner_up', letter: 'B' } },
+      75: { homeLabel: '1st Group F', awayLabel: '2nd Group C', homeGroup: { pos: 'winner', letter: 'F' }, awayGroup: { pos: 'runner_up', letter: 'C' } },
+      76: { homeLabel: '1st Group C', awayLabel: '2nd Group F', homeGroup: { pos: 'winner', letter: 'C' }, awayGroup: { pos: 'runner_up', letter: 'F' } },
+      78: { homeLabel: '2nd Group E', awayLabel: '2nd Group I', homeGroup: { pos: 'runner_up', letter: 'E' }, awayGroup: { pos: 'runner_up', letter: 'I' } },
+      83: { homeLabel: '2nd Group K', awayLabel: '2nd Group L', homeGroup: { pos: 'runner_up', letter: 'K' }, awayGroup: { pos: 'runner_up', letter: 'L' } },
+      84: { homeLabel: '1st Group H', awayLabel: '2nd Group J', homeGroup: { pos: 'winner', letter: 'H' }, awayGroup: { pos: 'runner_up', letter: 'J' } },
+      86: { homeLabel: '1st Group J', awayLabel: '2nd Group H', homeGroup: { pos: 'winner', letter: 'J' }, awayGroup: { pos: 'runner_up', letter: 'H' } },
+      88: { homeLabel: '2nd Group D', awayLabel: '2nd Group G', homeGroup: { pos: 'runner_up', letter: 'D' }, awayGroup: { pos: 'runner_up', letter: 'G' } },
     }
 
     const R32_THIRD_META = [
-      { matchNumber: 74, homeLabel: '1° Grupo E', homeGroup: { pos: 'winner' as const, letter: 'E' } },
-      { matchNumber: 77, homeLabel: '1° Grupo I', homeGroup: { pos: 'winner' as const, letter: 'I' } },
-      { matchNumber: 79, homeLabel: '1° Grupo A', homeGroup: { pos: 'winner' as const, letter: 'A' } },
-      { matchNumber: 80, homeLabel: '1° Grupo L', homeGroup: { pos: 'winner' as const, letter: 'L' } },
-      { matchNumber: 81, homeLabel: '1° Grupo D', homeGroup: { pos: 'winner' as const, letter: 'D' } },
-      { matchNumber: 82, homeLabel: '1° Grupo G', homeGroup: { pos: 'winner' as const, letter: 'G' } },
-      { matchNumber: 85, homeLabel: '1° Grupo B', homeGroup: { pos: 'winner' as const, letter: 'B' } },
-      { matchNumber: 87, homeLabel: '1° Grupo K', homeGroup: { pos: 'winner' as const, letter: 'K' } },
+      { matchNumber: 74, homeLabel: '1st Group E', homeGroup: { pos: 'winner' as const, letter: 'E' } },
+      { matchNumber: 77, homeLabel: '1st Group I', homeGroup: { pos: 'winner' as const, letter: 'I' } },
+      { matchNumber: 79, homeLabel: '1st Group A', homeGroup: { pos: 'winner' as const, letter: 'A' } },
+      { matchNumber: 80, homeLabel: '1st Group L', homeGroup: { pos: 'winner' as const, letter: 'L' } },
+      { matchNumber: 81, homeLabel: '1st Group D', homeGroup: { pos: 'winner' as const, letter: 'D' } },
+      { matchNumber: 82, homeLabel: '1st Group G', homeGroup: { pos: 'winner' as const, letter: 'G' } },
+      { matchNumber: 85, homeLabel: '1st Group B', homeGroup: { pos: 'winner' as const, letter: 'B' } },
+      { matchNumber: 87, homeLabel: '1st Group K', homeGroup: { pos: 'winner' as const, letter: 'K' } },
     ]
 
     const matches: MatchSlot[] = []
@@ -215,7 +215,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
         homeTeam: getTeam(info.homeGroup.pos, info.homeGroup.letter),
         awayTeam: thirdGroup ? getThird(thirdGroup) : null,
         homeLabel: info.homeLabel,
-        awayLabel: thirdGroup ? `3° Grupo ${thirdGroup}` : '3° lugar por definir',
+        awayLabel: thirdGroup ? `3rd Group ${thirdGroup}` : '3rd place TBD',
       })
     }
 
@@ -228,8 +228,8 @@ export function GuestFlow({ token }: GuestFlowProps) {
         matchNumber: matchNum,
         stage: 'round_of_16',
         homeTeam: null, awayTeam: null,
-        homeLabel: `Ganador #${child1}`,
-        awayLabel: `Ganador #${child2}`,
+        homeLabel: `Winner #${child1}`,
+        awayLabel: `Winner #${child2}`,
       })
     }
 
@@ -240,7 +240,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
       matches.push({
         matchNumber: matchNum, stage: 'quarter_final',
         homeTeam: null, awayTeam: null,
-        homeLabel: `Ganador #${child1}`, awayLabel: `Ganador #${child2}`,
+        homeLabel: `Winner #${child1}`, awayLabel: `Winner #${child2}`,
       })
     }
 
@@ -251,14 +251,14 @@ export function GuestFlow({ token }: GuestFlowProps) {
       matches.push({
         matchNumber: matchNum, stage: 'semi_final',
         homeTeam: null, awayTeam: null,
-        homeLabel: `Ganador #${child1}`, awayLabel: `Ganador #${child2}`,
+        homeLabel: `Winner #${child1}`, awayLabel: `Winner #${child2}`,
       })
     }
 
     matches.push({
       matchNumber: 104, stage: 'final',
       homeTeam: null, awayTeam: null,
-      homeLabel: 'Ganador #101', awayLabel: 'Ganador #102',
+      homeLabel: 'Winner #101', awayLabel: 'Winner #102',
     })
 
     return matches.sort((a, b) => a.matchNumber - b.matchNumber)
@@ -331,11 +331,11 @@ export function GuestFlow({ token }: GuestFlowProps) {
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error al guardar')
+      if (!res.ok) throw new Error(data.error || 'Error saving')
       setSubmitted(true)
       setSaveSuccess(data.predictionId)
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Error al guardar')
+      setSubmitError(err instanceof Error ? err.message : 'Error saving')
     } finally {
       setSubmitting(false)
     }
@@ -350,8 +350,8 @@ export function GuestFlow({ token }: GuestFlowProps) {
 
   const confirmBetName = useCallback(() => {
     const trimmed = betName.trim()
-    if (!trimmed) { setNameError('El nombre es obligatorio'); return }
-    if (trimmed.length < 3) { setNameError('Mínimo 3 caracteres'); return }
+    if (!trimmed) { setNameError('Name is required'); return }
+    if (trimmed.length < 3) { setNameError('Minimum 3 characters'); return }
     setNameError(null)
     setShowNameModal(false)
     performSave(trimmed)
@@ -397,10 +397,10 @@ export function GuestFlow({ token }: GuestFlowProps) {
         <div className="flex flex-col gap-6 animate-fade-in">
           <div className="border-b border-white/10 pb-5">
             <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
-              FASE DE GRUPOS
+              GROUP STAGE
             </h1>
             <p className="mt-2 text-sm text-text-secondary max-w-2xl">
-              Ordena los 4 equipos de cada grupo arrastrando. El 1° y 2° lugar avanzan a octavos; el 3° lugar puede clasificar entre los mejores terceros.
+              Drag to order the 4 teams in each group. 1st and 2nd place advance to Round of 32; 3rd place may qualify as best third-placed.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -418,7 +418,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
                   : 'cursor-not-allowed bg-white/5 text-text-secondary border border-white/10'
               }`}
             >
-              CONTINUAR A TERCEROS LUGARES
+              CONTINUE TO THIRD PLACES
             </button>
           </div>
         </div>
@@ -429,14 +429,14 @@ export function GuestFlow({ token }: GuestFlowProps) {
         <div className="flex flex-col gap-6 animate-fade-in">
           <div className="border-b border-white/10 pb-5">
             <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
-              TERCEROS LUGARES
+              THIRD PLACES
             </h1>
             <p className="mt-2 text-sm text-text-secondary max-w-2xl">
-              Selecciona exactamente 8 grupos cuyos terceros lugares avanzarán a octavos de final.
+              Select exactly 8 groups whose third-placed teams will advance to the Round of 32.
             </p>
           </div>
           <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md">
-            <span className="text-sm font-medium text-text-secondary">Grupos seleccionados</span>
+            <span className="text-sm font-medium text-text-secondary">Selected groups</span>
             <span className={`text-xl font-bold font-[family-name:var(--font-bebas)] tracking-wide transition-colors ${
               thirdPlaceSelection.length === 8 ? 'text-accent-green' : 'text-text-secondary'
             }`}>{thirdPlaceSelection.length}/8</span>
@@ -459,7 +459,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
                 >
                   <span className={`text-sm font-[family-name:var(--font-bebas)] tracking-widest transition-colors ${
                     isSelected ? 'text-accent-green' : 'text-text-secondary group-hover:text-white'
-                  }`}>GRUPO {letter}</span>
+                  }`}>GROUP {letter}</span>
                   {team && (
                     <span className="flex flex-col items-center gap-1">
                       <CountryFlag name={team} width={28} className="shrink-0" />
@@ -471,7 +471,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="2 7 5.5 10.5 12 4" />
                       </svg>
-                      Avanza
+                      Advances
                     </span>
                   )}
                 </button>
@@ -483,7 +483,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
               onClick={() => setStep('groups')}
               className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
             >
-              ← EDITAR GRUPOS
+              ← EDIT GROUPS
             </button>
             <button
               onClick={() => setStep('knockout')}
@@ -494,7 +494,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
                   : 'cursor-not-allowed bg-white/5 text-text-secondary border border-white/10'
               }`}
             >
-              {thirdPlaceSelection.length === 8 ? 'GUARDAR Y CONTINUAR AL KNOCKOUT' : `SELECCIONA ${8 - thirdPlaceSelection.length} MÁS`}
+              {thirdPlaceSelection.length === 8 ? 'SAVE AND CONTINUE TO KNOCKOUT' : `SELECT ${8 - thirdPlaceSelection.length} MORE`}
             </button>
           </div>
         </div>
@@ -508,7 +508,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
               KNOCKOUT STAGE
             </h1>
             <p className="mt-2 text-sm text-text-secondary max-w-2xl">
-              Selecciona el ganador de cada partido. Completa la llave para definir tu campeón.
+              Select the winner of each match. Complete the bracket to pick your champion.
             </p>
           </div>
 
@@ -517,13 +517,13 @@ export function GuestFlow({ token }: GuestFlowProps) {
               onClick={() => setStep('groups')}
               className="rounded-full border border-white/20 px-5 py-2 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
             >
-              ← EDITAR GRUPOS
+              ← EDIT GROUPS
             </button>
             <button
               onClick={() => setStep('third-place')}
               className="rounded-full border border-white/20 px-5 py-2 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
             >
-              ← EDITAR 3° LUGARES
+              ← EDIT 3RD PLACES
             </button>
           </div>
 
@@ -551,9 +551,9 @@ export function GuestFlow({ token }: GuestFlowProps) {
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                    ENVIANDO...
+                    SUBMITTING...
                   </span>
-                ) : 'GUARDAR APUESTA'}
+                ) : 'SAVE BET'}
               </button>
             </div>
           )}
@@ -566,7 +566,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
                 </svg>
               </div>
               <h2 className="font-[family-name:var(--font-bebas)] text-2xl tracking-wide text-accent-green">
-                APUESTA ENVIADA
+                BET SUBMITTED
               </h2>
               {champion && (
                 <p className="flex items-center gap-2 text-white">
@@ -575,7 +575,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
                 </p>
               )}
               <p className="text-sm text-text-secondary">
-                Tu apuesta ha sido guardada exitosamente.
+                Your bet has been saved successfully.
               </p>
             </div>
           )}
@@ -583,7 +583,7 @@ export function GuestFlow({ token }: GuestFlowProps) {
           {submitted && !saveSuccess && (
             <div className="flex justify-center pt-4">
               <span className="rounded-full border border-accent-green/30 bg-accent-green/10 px-4 py-1.5 text-xs font-bold tracking-wide text-accent-green">
-                ✓ APUESTA ENVIADA
+                ✓ BET SUBMITTED
               </span>
             </div>
           )}
@@ -596,16 +596,16 @@ export function GuestFlow({ token }: GuestFlowProps) {
           <div className="absolute inset-0 bg-black/70" onClick={() => setShowNameModal(false)} />
           <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0e1a] p-6 shadow-2xl">
             <p className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white">
-              NOMBRA TU APUESTA
+              NAME YOUR BET
             </p>
             <p className="mt-1 text-sm text-text-secondary">
-              Ponle un nombre único a tu apuesta (ej: &quot;Mi Porra #1&quot;)
+              Give your bet a unique name (e.g. &quot;My Bet #1&quot;)
             </p>
             <input
               type="text"
               value={betName}
               onChange={e => { setBetName(e.target.value); setNameError(null) }}
-              placeholder="Ej: Mi Pronóstico 1"
+              placeholder="E.g. My Prediction 1"
               className="mt-4 w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-text-secondary outline-none transition-colors focus:border-accent-green"
               autoFocus
               onKeyDown={e => { if (e.key === 'Enter') confirmBetName() }}
@@ -616,14 +616,14 @@ export function GuestFlow({ token }: GuestFlowProps) {
                 onClick={() => { setShowNameModal(false); setNameError(null) }}
                 className="flex-1 rounded-full border border-white/20 px-5 py-2.5 text-xs font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
               >
-                CANCELAR
+                CANCEL
               </button>
               <button
                 onClick={confirmBetName}
                 disabled={submitting}
                 className="flex-1 rounded-full bg-accent-green px-5 py-2.5 text-xs font-bold tracking-wide text-black transition-all duration-200 hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-50"
               >
-                {submitting ? 'GUARDANDO...' : 'CONFIRMAR'}
+                {submitting ? 'SAVING...' : 'CONFIRM'}
               </button>
             </div>
           </div>

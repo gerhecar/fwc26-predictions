@@ -37,20 +37,20 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-fifa-blue">FWC 2026</h1>
-          <p className="text-sm text-text-secondary">Predicciones Mundialistas</p>
+          <p className="text-sm text-text-secondary">World Cup Predictions</p>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <Input
             label="Email"
             type="email"
-            placeholder="tu@email.com"
+            placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
           <Input
-            label="Contraseña"
+            label="Password"
             type="password"
             placeholder="••••••••"
             value={password}
@@ -63,14 +63,14 @@ export default function LoginPage() {
           )}
 
           <Button type="submit" loading={loading} className="w-full">
-            Iniciar sesión
+            Sign In
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-text-secondary">
-          ¿No tienes cuenta?{' '}
+          Don't have an account?{' '}
           <Link href="/auth/register" className="text-fifa-blue hover:underline">
-            Registrarse
+            Sign Up
           </Link>
         </p>
       </Card>

@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 async function assertAdmin(): Promise<string> {
   const user = await getCurrentUser()
   if (!user || user.role !== 'admin') {
-    throw new Error('No autorizado')
+    throw new Error('Not authorized')
   }
   return user.id
 }
@@ -19,7 +19,7 @@ export async function toggleUserStatus(
   try {
     const adminId = await assertAdmin()
     if (userId === adminId) {
-      return { success: false, message: 'No puedes deshabilitar tu propia cuenta' }
+      return { success: false, message: 'You cannot disable your own account' }
     }
 
     const pool = getPool()
@@ -27,10 +27,10 @@ export async function toggleUserStatus(
     revalidatePath('/admin/users')
     return {
       success: true,
-      message: isActive ? 'Usuario habilitado correctamente' : 'Usuario deshabilitado correctamente',
+      message: isActive ? 'User enabled successfully' : 'User disabled successfully',
     }
   } catch (e) {
-    return { success: false, message: e instanceof Error ? e.message : 'Error al actualizar usuario' }
+    return { success: false, message: e instanceof Error ? e.message : 'Error updating user' }
   }
 }
 
@@ -41,7 +41,7 @@ export async function changeUserRole(
   try {
     const adminId = await assertAdmin()
     if (userId === adminId && newRole !== 'admin') {
-      return { success: false, message: 'No puedes quitarte el rol de administrador a ti mismo' }
+      return { success: false, message: 'You cannot remove your own admin role' }
     }
 
     const pool = getPool()
@@ -49,10 +49,10 @@ export async function changeUserRole(
     revalidatePath('/admin/users')
     return {
       success: true,
-      message: newRole === 'admin' ? 'Usuario promovido a administrador' : 'Usuario degradado a usuario regular',
+      message: newRole === 'admin' ? 'User promoted to admin' : 'User demoted to regular user',
     }
   } catch (e) {
-    return { success: false, message: e instanceof Error ? e.message : 'Error al cambiar rol' }
+    return { success: false, message: e instanceof Error ? e.message : 'Error changing role' }
   }
 }
 
@@ -62,7 +62,7 @@ export async function deleteUser(
   try {
     const adminId = await assertAdmin()
     if (userId === adminId) {
-      return { success: false, message: 'No puedes eliminar tu propia cuenta' }
+      return { success: false, message: 'You cannot delete your own account' }
     }
 
     const pool = getPool()
@@ -73,9 +73,9 @@ export async function deleteUser(
     await pool.execute('UPDATE user_groups SET created_by = NULL WHERE created_by = ?', [userId])
     await pool.execute('DELETE FROM users WHERE id = ?', [userId])
     revalidatePath('/admin/users')
-    return { success: true, message: 'Usuario eliminado correctamente' }
+    return { success: true, message: 'User deleted successfully' }
   } catch (e) {
-    return { success: false, message: e instanceof Error ? e.message : 'Error al eliminar usuario' }
+    return { success: false, message: e instanceof Error ? e.message : 'Error deleting user' }
   }
 }
 
@@ -92,10 +92,10 @@ export async function validateBet(
     )
     const bets = existing as any[]
     if (bets.length === 0) {
-      return { success: false, message: 'Apuesta no encontrada' }
+      return { success: false, message: 'Bet not found' }
     }
     if (bets[0].status !== 'submitted') {
-      return { success: false, message: 'Solo se pueden validar apuestas en estado submitted' }
+      return { success: false, message: 'Only bets with submitted status can be validated' }
     }
 
     const admin = await getCurrentUser()
@@ -105,9 +105,9 @@ export async function validateBet(
     )
 
     revalidatePath('/admin/bets')
-    return { success: true, message: 'Apuesta validada correctamente' }
+    return { success: true, message: 'Bet validated successfully' }
   } catch (e) {
-    return { success: false, message: e instanceof Error ? e.message : 'Error al validar apuesta' }
+    return { success: false, message: e instanceof Error ? e.message : 'Error validating bet' }
   }
 }
 
@@ -124,10 +124,10 @@ export async function deleteBet(
     )
     const bets = existing as any[]
     if (bets.length === 0) {
-      return { success: false, message: 'Apuesta no encontrada' }
+      return { success: false, message: 'Bet not found' }
     }
     if (bets[0].status === 'deleted') {
-      return { success: false, message: 'La apuesta ya está eliminada' }
+      return { success: false, message: 'This bet has already been deleted' }
     }
 
     await pool.execute(
@@ -136,8 +136,8 @@ export async function deleteBet(
     )
 
     revalidatePath('/admin/bets')
-    return { success: true, message: 'Apuesta eliminada correctamente' }
+    return { success: true, message: 'Bet deleted successfully' }
   } catch (e) {
-    return { success: false, message: e instanceof Error ? e.message : 'Error al eliminar apuesta' }
+    return { success: false, message: e instanceof Error ? e.message : 'Error deleting bet' }
   }
 }

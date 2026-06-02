@@ -38,24 +38,24 @@ export default async function AdminPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold">Panel de Administración</h1>
+        <h1 className="text-2xl font-bold">Admin Panel</h1>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
             <p className="text-3xl font-bold text-white">{userCount}</p>
-            <p className="text-sm text-gray-400">Usuarios</p>
+            <p className="text-sm text-gray-400">Users</p>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
             <p className="text-3xl font-bold text-white">{predictionCount}</p>
-            <p className="text-sm text-gray-400">Pronósticos</p>
+            <p className="text-sm text-gray-400">Predictions</p>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
             <p className="text-3xl font-bold text-fifa-gold">{submittedCount}</p>
-            <p className="text-sm text-gray-400">Enviados</p>
+            <p className="text-sm text-gray-400">Submitted</p>
           </div>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
             <p className="text-3xl font-bold text-white">{betCount}</p>
-            <p className="text-sm text-gray-400">Apuestas activas</p>
+            <p className="text-sm text-gray-400">Active bets</p>
           </div>
         </div>
 
@@ -70,24 +70,24 @@ export default async function AdminPage() {
             className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all"
           >
             <div className="text-2xl mb-2">👥</div>
-            <h3 className="font-semibold text-white">Gestión de Usuarios</h3>
-            <p className="text-sm text-gray-400">Ver, buscar y gestionar usuarios registrados</p>
+            <h3 className="font-semibold text-white">User Management</h3>
+            <p className="text-sm text-gray-400">View, search and manage registered users</p>
           </Link>
           <Link
             href="/admin/bets"
             className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all"
           >
             <div className="text-2xl mb-2">📝</div>
-            <h3 className="font-semibold text-white">Gestión de Apuestas</h3>
-            <p className="text-sm text-gray-400">Ver, validar y eliminar apuestas</p>
+            <h3 className="font-semibold text-white">Bet Management</h3>
+            <p className="text-sm text-gray-400">View, validate and delete bets</p>
           </Link>
           <Link
             href="/admin/results"
             className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 hover:bg-gray-700/50 transition-all"
           >
             <div className="text-2xl mb-2">📋</div>
-            <h3 className="font-semibold text-white">Cargar Resultados</h3>
-            <p className="text-sm text-gray-400">Ingresar resultados oficiales de grupos y knockout</p>
+            <h3 className="font-semibold text-white">Load Results</h3>
+            <p className="text-sm text-gray-400">Enter official group and knockout results</p>
           </Link>
           <Link
             href="/admin/leaderboard"
@@ -95,12 +95,12 @@ export default async function AdminPage() {
           >
             <div className="text-2xl mb-2">🏆</div>
             <h3 className="font-semibold text-white">Leaderboard</h3>
-            <p className="text-sm text-gray-400">Ver puntajes provisionales y oficiales de todas las apuestas</p>
+            <p className="text-sm text-gray-400">View provisional and official scores</p>
           </Link>
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
             <div className="text-2xl mb-2">📊</div>
-            <h3 className="font-semibold text-white">Calcular Puntajes</h3>
-            <p className="text-sm text-gray-400 mb-3">Recalcular puntajes comparando apuestas vs resultados</p>
+            <h3 className="font-semibold text-white">Calculate Scores</h3>
+            <p className="text-sm text-gray-400 mb-3">Recalculate scores comparing bets vs results</p>
             <CalculateScoresButton />
           </div>
         </div>

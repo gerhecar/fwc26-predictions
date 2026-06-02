@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS } from '@/lib/predictions/constants'
 import type { PredictionExport } from '@/lib/predictions/json-export'
-import BG from '@/images/finals.jpg'
+import BG from '@/images/campo.avif'
 
 interface BetDetailProps {
   prediction: PredictionExport
@@ -67,21 +67,21 @@ export function BetDetail({ prediction, betName, submittedAt, champion }: BetDet
           {betName}
         </h1>
         <p className="mt-1 text-sm text-text-secondary">
-          Enviada el {new Date(submittedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+          Submitted on {new Date(submittedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
         <p className="mt-1 flex items-center gap-1.5 text-sm text-accent-green">
           <CountryFlag name={champion} width={18} className="inline-block" />
-          Campeón: {champion}
+          Champion: {champion}
         </p>
       </div>
 
       {/* Group Stage */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <h2 className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white mb-4">FASE DE GRUPOS</h2>
+        <h2 className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white mb-4">GROUP STAGE</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {groupStageEntries.map(({ letter, teams }) => (
             <div key={letter} className="rounded-xl border border-white/10 bg-white/5 p-3">
-              <p className="font-[family-name:var(--font-bebas)] text-sm tracking-wide text-text-secondary mb-2">Grupo {letter}</p>
+              <p className="font-[family-name:var(--font-bebas)] text-sm tracking-wide text-text-secondary mb-2">Group {letter}</p>
               <div className="space-y-1.5">
                 {teams.map((team, idx) => (
                   <div key={team} className="flex items-center gap-2 text-sm">
@@ -105,11 +105,11 @@ export function BetDetail({ prediction, betName, submittedAt, champion }: BetDet
       {/* Third Placed */}
       {prediction.bestThirdPlaced && prediction.bestThirdPlaced.length > 0 && (
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <h2 className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white mb-3">MEJORES TERCEROS</h2>
+          <h2 className="font-[family-name:var(--font-bebas)] text-xl tracking-wide text-white mb-3">BEST THIRD-PLACED</h2>
           <div className="flex flex-wrap gap-2">
             {prediction.bestThirdPlaced.map(letter => (
               <span key={letter} className="rounded-full border border-accent-green/20 bg-accent-green/5 px-3 py-1 text-xs text-accent-green">
-                3° Grupo {letter}
+                3rd Group {letter}
               </span>
             ))}
           </div>
@@ -146,7 +146,7 @@ export function BetDetail({ prediction, betName, submittedAt, champion }: BetDet
         <div className="flex items-center gap-3 rounded-2xl border border-fifa-gold/30 bg-fifa-gold/5 px-8 py-4">
           <CountryFlag name={champion} width={32} />
           <div>
-            <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-fifa-gold">CAMPEÓN</p>
+            <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-fifa-gold">CHAMPION</p>
             <p className="text-white">{champion}</p>
           </div>
         </div>

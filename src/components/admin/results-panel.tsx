@@ -93,7 +93,7 @@ function GroupStageTab({
         return (
           <div key={letter} className="rounded-xl border border-white/10 bg-white/5 p-4">
             <p className="font-[family-name:var(--font-bebas)] text-base tracking-wide text-white mb-3">
-              Grupo {letter}
+              Group {letter}
             </p>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd(letter)}>
               <SortableContext items={teams} strategy={verticalListSortingStrategy}>
@@ -135,7 +135,7 @@ function ThirdPlacedTab({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-text-secondary">
-        Selecciona exactamente 8 equipos que terminaron 3° en su grupo ({selected.length}/8)
+        Select exactly 8 teams that finished 3rd in their group ({selected.length}/8)
       </p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {thirdTeams.map(({ letter, team }) => {
@@ -161,7 +161,7 @@ function ThirdPlacedTab({
               </div>
               <CountryFlag name={team} width={18} className="shrink-0" />
               <span className="flex-1">{team}</span>
-              <span className="text-[10px] text-text-secondary">3° Grupo {letter}</span>
+              <span className="text-[10px] text-text-secondary">3rd Group {letter}</span>
             </button>
           )
         })}
@@ -192,7 +192,7 @@ const CHILD_MAP: Record<number, [number, number]> = {
 }
 
 const STAGE_LABELS: Record<string, string> = {
-  r32: 'RONDA DE 32', r16: 'OCTAVOS', qf: 'CUARTOS', sf: 'SEMIFINALES', f: 'FINAL',
+  r32: 'ROUND OF 32', r16: 'ROUND OF 16', qf: 'QUARTER FINALS', sf: 'SEMI FINALS', f: 'FINAL',
 }
 const STAGE_KEYS = ['r32', 'r16', 'qf', 'sf', 'f']
 
@@ -371,7 +371,7 @@ function KnockoutTab({
                         </button>
                       )}
                       {!home && !away && (
-                        <span className="text-text-secondary italic">Esperando ronda anterior</span>
+                        <span className="text-text-secondary italic">Waiting for previous round</span>
                       )}
                     </div>
                   </div>
@@ -387,7 +387,7 @@ function KnockoutTab({
           <div className="flex items-center gap-3 rounded-2xl border border-fifa-gold/30 bg-fifa-gold/5 px-8 py-4">
             <CountryFlag name={knockout[104]} width={32} />
             <div>
-              <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-fifa-gold">CAMPEÓN OFICIAL</p>
+              <p className="font-[family-name:var(--font-bebas)] text-lg tracking-wide text-fifa-gold">OFFICIAL CHAMPION</p>
               <p className="text-white">{knockout[104]}</p>
             </div>
           </div>
@@ -462,13 +462,13 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       setSavedBestThirdPlaced([...bestThirdPlaced])
       setSavedKnockout(JSON.parse(JSON.stringify(knockout)))
 
-      setMsg({ type: 'ok', text: 'Resultados guardados como borrador' })
+      setMsg({ type: 'ok', text: 'Results saved as draft' })
 
       if (data.provisionalSummary) {
         const s = data.provisionalSummary
         setProvisionalSummary(
-          `${s.scoredBets} apuesta${s.scoredBets !== 1 ? 's' : ''} puntuada${s.scoredBets !== 1 ? 's' : ''} (provisional)` +
-          (s.skippedBets > 0 ? `, ${s.skippedBets} omitida${s.skippedBets !== 1 ? 's' : ''}` : '')
+          `${s.scoredBets} bet${s.scoredBets !== 1 ? 's' : ''} scored (provisional)` +
+          (s.skippedBets > 0 ? `, ${s.skippedBets} skipped` : '')
         )
       }
 
@@ -477,7 +477,7 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       const reloadData = await reloadRes.json()
       if (reloadData.phaseStatus) setPhaseStatus(reloadData.phaseStatus)
     } catch (err) {
-      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error al guardar' })
+      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error saving' })
     } finally {
       setSaving(false)
     }
@@ -496,12 +496,12 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       const res = await fetch(`/api/admin/results/lock/${phase}`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error')
-      setLockMsg({ type: 'ok', text: `Fase bloqueada: ${data.phaseLabel}. ${data.officialSummary?.scoredBets || 0} apuestas puntuadas (oficial).` })
+      setLockMsg({ type: 'ok', text: `Phase locked: ${data.phaseLabel}. ${data.officialSummary?.scoredBets || 0} bets scored (official).` })
       const reloadRes = await fetch('/api/admin/results')
       const reloadData = await reloadRes.json()
       if (reloadData.phaseStatus) setPhaseStatus(reloadData.phaseStatus)
     } catch (err) {
-      setLockMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error al bloquear' })
+      setLockMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error locking' })
     } finally {
       setLocking(null)
     }
@@ -515,9 +515,9 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error')
       setStatus('published')
-      setMsg({ type: 'ok', text: 'Resultados publicados exitosamente' })
+      setMsg({ type: 'ok', text: 'Results published successfully' })
     } catch (err) {
-      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error al publicar' })
+      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error publishing' })
     } finally {
       setPublishing(false)
     }
@@ -527,8 +527,8 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
     if (!phaseStatus) return null
     const ps = phaseStatus[phase]
     if (!ps) return null
-    if (ps.status === 'locked') return { label: 'BLOQUEADA', color: 'text-fifa-gold border-fifa-gold/30 bg-fifa-gold/10' }
-    return { label: 'BORRADOR', color: 'text-text-secondary border-white/10 bg-white/5' }
+    if (ps.status === 'locked') return { label: 'LOCKED', color: 'text-fifa-gold border-fifa-gold/30 bg-fifa-gold/10' }
+    return { label: 'DRAFT', color: 'text-text-secondary border-white/10 bg-white/5' }
   }
 
   const hasUnsavedChanges = (): boolean => {
@@ -545,8 +545,8 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
   }
 
   const tabs: { key: Tab; label: string; phaseKey?: keyof PhaseStatus; lockPhase?: string }[] = [
-    { key: 'groups', label: 'FASE DE GRUPOS', phaseKey: 'groupStage', lockPhase: 'group' },
-    { key: 'third', label: 'TERCEROS LUGARES', phaseKey: 'bestThirdPlaced', lockPhase: 'third' },
+    { key: 'groups', label: 'GROUP STAGE', phaseKey: 'groupStage', lockPhase: 'group' },
+    { key: 'third', label: 'THIRD PLACES', phaseKey: 'bestThirdPlaced', lockPhase: 'third' },
     { key: 'knockout', label: 'KNOCKOUT', phaseKey: 'knockout', lockPhase: 'knockout' },
   ]
 
@@ -559,10 +559,10 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
           ? 'border-accent-green/30 bg-accent-green/10 text-accent-green'
           : 'border-white/10 bg-white/5 text-text-secondary'
       }`}>
-        Estado: <strong>{status === 'published' ? 'PUBLICADO' : 'BORRADOR'}</strong>
+        Status: <strong>{status === 'published' ? 'PUBLISHED' : 'DRAFT'}</strong>
         {status === 'published' && (
           <span className="ml-2 text-text-secondary">
-            — Los resultados están publicados. Edítalos como borrador y vuelve a publicar si cambian.
+            — Results are published. Edit as draft and re-publish if they change.
           </span>
         )}
       </div>
@@ -602,7 +602,7 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" />
             </svg>
-            Descartar cambios
+            Discard changes
           </button>
         </div>
       )}
@@ -628,7 +628,7 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       {/* Provisional summary */}
       {provisionalSummary && (
         <div className="rounded-xl border border-accent-green/30 bg-accent-green/10 p-3 text-sm text-accent-green text-center">
-          Puntajes provisionales calculados: {provisionalSummary}
+          Provisional scores calculated: {provisionalSummary}
         </div>
       )}
 
@@ -644,9 +644,9 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       {/* Calculate Scores (legacy) */}
       <div className="pt-4 border-t border-white/10">
         <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <p className="text-sm font-semibold text-white mb-2">Calcular Puntajes (Legacy)</p>
+          <p className="text-sm font-semibold text-white mb-2">Calculate Scores (Legacy)</p>
           <p className="text-xs text-text-secondary mb-3">
-            Publica los resultados primero, luego calcula puntajes globales.
+            Publish results first, then calculate global scores.
           </p>
           <CalculateScoresButton />
         </div>
@@ -659,7 +659,7 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
           disabled={saving}
           className="rounded-full bg-accent-green px-8 py-3 text-sm font-bold tracking-wide text-black transition-all hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-50"
         >
-          {saving ? 'GUARDANDO...' : 'GUARDAR BORRADOR'}
+          {saving ? 'SAVING...' : 'SAVE DRAFT'}
         </button>
 
         {/* Phase lock buttons */}
@@ -670,8 +670,8 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
             className="rounded-full border border-fifa-gold px-8 py-3 text-sm font-bold tracking-wide text-fifa-gold transition-all hover:bg-fifa-gold/10 disabled:opacity-50"
           >
             {locking === tabs.find(t => t.key === tab)!.lockPhase
-              ? 'BLOQUEANDO...'
-              : `BLOQUEAR ${tab === 'groups' ? 'FASE DE GRUPOS' : tab === 'third' ? 'TERCEROS LUGARES' : 'KNOCKOUT'}`
+              ? 'LOCKING...'
+              : `LOCK ${tab === 'groups' ? 'GROUP STAGE' : tab === 'third' ? 'THIRD PLACES' : 'KNOCKOUT'}`
             }
           </button>
         )}
@@ -681,7 +681,7 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
           disabled={publishing || status === 'published'}
           className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-white transition-all hover:bg-white/10 disabled:opacity-50"
         >
-          {publishing ? 'PUBLICANDO...' : status === 'published' ? 'PUBLICADO ✓' : 'PUBLICAR TODO'}
+          {publishing ? 'PUBLISHING...' : status === 'published' ? 'PUBLISHED ✓' : 'PUBLISH ALL'}
         </button>
       </div>
     </div>

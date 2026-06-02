@@ -26,10 +26,10 @@ export function GroupsView({ onContinue, onBack }: GroupsViewProps) {
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="border-b border-white/10 pb-5">
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white sm:text-4xl">
-          FASE DE GRUPOS
+          GROUP STAGE
         </h1>
         <p className="mt-2 text-sm text-text-secondary max-w-2xl">
-          Ordena los 4 equipos de cada grupo arrastrando. El 1° y 2° lugar avanzan a octavos; el 3° lugar puede clasificar entre los mejores terceros.
+          Drag to order the 4 teams in each group. 1st and 2nd place advance to Round of 32; 3rd place may qualify as best third-placed.
         </p>
       </div>
 
@@ -50,7 +50,7 @@ export function GroupsView({ onContinue, onBack }: GroupsViewProps) {
             onClick={onBack}
             className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-text-secondary transition-all hover:border-white/40 hover:text-white"
           >
-            ← VOLVER
+            ← BACK
           </button>
         )}
         <button
@@ -63,18 +63,18 @@ export function GroupsView({ onContinue, onBack }: GroupsViewProps) {
           }`}
         >
           {allComplete
-            ? 'CONTINUAR A TERCEROS LUGARES'
-            : `${pendingCount} GRUPO${pendingCount !== 1 ? 'S' : ''} PENDIENTE${pendingCount !== 1 ? 'S' : ''}`}
+            ? 'CONTINUE TO THIRD PLACES'
+            : `${pendingCount} GROUP${pendingCount !== 1 ? 'S' : ''} PENDING`}
         </button>
         <button
           onClick={() => {
-            if (window.confirm('¿Estás seguro? Se borrarán todas tus predicciones.')) {
+            if (window.confirm('Are you sure? All your predictions will be cleared.')) {
               reset()
             }
           }}
           className="rounded-full border border-red-500/30 px-6 py-3 text-sm font-bold tracking-wide text-red-400 transition-all hover:border-red-400/50 hover:bg-red-500/10"
         >
-          REINICIAR
+          RESET
         </button>
       </div>
     </div>

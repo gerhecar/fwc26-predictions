@@ -23,7 +23,7 @@ export function LeaderboardView() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent-green border-t-transparent" />
-          <p className="text-sm text-text-secondary">Cargando leaderboard...</p>
+          <p className="text-sm text-text-secondary">Loading leaderboard...</p>
         </div>
       </div>
     )
@@ -38,10 +38,10 @@ export function LeaderboardView() {
           </svg>
         </div>
         <h2 className="font-[family-name:var(--font-bebas)] text-2xl tracking-wide text-white">
-          Leaderboard no disponible
+          Leaderboard not available
         </h2>
         <p className="text-sm text-text-secondary text-center max-w-md">
-          Los puntajes aparecer&aacute;n cuando los organizadores comiencen a ingresar resultados.
+           Scores will appear once organizers start entering results.
         </p>
       </div>
     )
@@ -53,7 +53,7 @@ export function LeaderboardView() {
         <h1 className="font-[family-name:var(--font-bebas)] text-3xl tracking-wide text-white">
           Leaderboard
         </h1>
-        <p className="text-text-secondary text-sm">Ranking de apuestas v&aacute;lidas</p>
+        <p className="text-text-secondary text-sm">Valid bets ranking</p>
       </div>
 
       {data.isDraft && (
@@ -65,10 +65,10 @@ export function LeaderboardView() {
             </svg>
             <div>
               <p className="text-sm font-semibold text-fifa-gold">
-                Puntajes provisorios
+                Provisional Scores
               </p>
               <p className="text-xs text-text-secondary mt-0.5">
-                Ranking basado en resultados provisorios. Los puntajes pueden cambiar hasta que los resultados oficiales sean confirmados.
+                Ranking based on provisional results. Scores may change until official results are confirmed.
               </p>
             </div>
           </div>
@@ -80,9 +80,9 @@ export function LeaderboardView() {
           <thead>
             <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-bold tracking-wide text-text-secondary uppercase">
               <th className="px-4 py-3 w-12 text-center">#</th>
-              <th className="px-4 py-3">Usuario</th>
-              <th className="px-4 py-3">Apuesta</th>
-              <th className="px-4 py-3 text-right">Puntaje</th>
+              <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Bet</th>
+              <th className="px-4 py-3 text-right">Score</th>
               <th className="px-4 py-3 text-right">Estado</th>
             </tr>
           </thead>
@@ -104,14 +104,14 @@ export function LeaderboardView() {
                   </span>
                   {entry.officialScore !== null && entry.officialScore !== entry.provisionalScore && (
                     <span className="block text-[11px] font-mono text-fifa-gold">
-                      Oficial: {entry.officialScore}
+                      Official: {entry.officialScore}
                     </span>
                   )}
                   {(entry.provisionalScoredAt || entry.officialScoredAt) && (
                     <span className="block text-[10px] text-text-secondary">
                       {new Date(
                         entry.provisionalScoredAt || entry.officialScoredAt!,
-                      ).toLocaleDateString('es-ES', {
+                      ).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
@@ -130,10 +130,10 @@ export function LeaderboardView() {
                     }`}
                   >
                     {entry.statusLabel === 'official'
-                      ? 'OFICIAL'
+                      ? 'OFFICIAL'
                       : entry.statusLabel === 'provisional'
                         ? 'PROVISIONAL'
-                        : 'SIN CALCULAR'}
+                        : 'NOT CALCULATED'}
                   </span>
                 </td>
               </tr>
@@ -144,7 +144,7 @@ export function LeaderboardView() {
 
       {data.calculatedAt && (
         <p className="text-[10px] text-text-secondary text-right">
-          Actualizado: {new Date(data.calculatedAt).toLocaleString('es-ES')}
+          Updated: {new Date(data.calculatedAt).toLocaleString('en-US')}
         </p>
       )}
 
@@ -153,7 +153,7 @@ export function LeaderboardView() {
           onClick={load}
           className="rounded-full border border-white/10 px-5 py-2 text-xs text-text-secondary hover:text-white transition-all"
         >
-          Recargar
+          Reload
         </button>
       </div>
     </div>

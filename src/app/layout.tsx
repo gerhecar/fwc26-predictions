@@ -14,8 +14,8 @@ const bebasNeue = Bebas_Neue({
 })
 
 export const metadata: Metadata = {
-  title: 'FWC 2026 - Predicciones',
-  description: 'Juego de predicciones para el Mundial FIFA 2026',
+  title: 'FWC 2026 - Predictions',
+  description: 'Prediction game for the FIFA World Cup 2026',
 }
 
 export default function RootLayout({
@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${inter.variable} ${bebasNeue.variable} h-full`}>
-      <body className="h-full font-sans antialiased">
+    <html lang="en" className={`${inter.variable} ${bebasNeue.variable}`}>
+      <body className="min-h-dvh font-sans antialiased overflow-x-hidden">
         {children}
       </body>
     </html>

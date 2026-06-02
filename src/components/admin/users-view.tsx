@@ -23,7 +23,7 @@ const STATUS_BADGE: Record<string, string> = {
 
 function formatDate(d: string | null): string {
   if (!d) return '—'
-  return new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return new Date(d).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 function SortIcon({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
@@ -94,7 +94,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
     <div className="flex flex-col gap-6">
       <BackToAdmin />
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">Gestión de Usuarios</h1>
+        <h1 className="text-2xl font-bold text-text-primary">User Management</h1>
         <p className="mt-1 text-sm text-text-secondary">
           {data.total} usuario{data.total !== 1 ? 's' : ''} registrado{data.total !== 1 ? 's' : ''}
         </p>
@@ -105,7 +105,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
           type="text"
           value={searchInput}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Buscar por nombre o email..."
+          placeholder="Search by name or email..."
           className="w-full rounded-lg border border-border bg-white px-4 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-fifa-blue focus:outline-none sm:max-w-xs"
         />
 
@@ -115,9 +115,9 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
             onChange={(e) => updateParam('roleFilter', e.target.value)}
             className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-fifa-blue focus:outline-none"
           >
-            <option value="all">Todos los roles</option>
-            <option value="user">Usuarios</option>
-            <option value="admin">Administradores</option>
+            <option value="all">All roles</option>
+            <option value="user">Users</option>
+            <option value="admin">Administrators</option>
           </select>
 
           <select
@@ -125,9 +125,9 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
             onChange={(e) => updateParam('statusFilter', e.target.value)}
             className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary focus:border-fifa-blue focus:outline-none"
           >
-            <option value="all">Todos los estados</option>
-            <option value="active">Activos</option>
-            <option value="inactive">Inactivos</option>
+            <option value="all">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
       </div>
@@ -140,7 +140,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
                 className="cursor-pointer px-4 py-3 font-semibold"
                 onClick={() => handleSort('display_name')}
               >
-                Usuario <SortIcon active={params.sortBy === 'display_name'} direction={params.sortOrder as 'asc' | 'desc'} />
+                User <SortIcon active={params.sortBy === 'display_name'} direction={params.sortOrder as 'asc' | 'desc'} />
               </th>
               <th
                 className="cursor-pointer px-4 py-3 font-semibold"
@@ -152,16 +152,16 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
                 className="cursor-pointer px-4 py-3 font-semibold"
                 onClick={() => handleSort('role')}
               >
-                Rol <SortIcon active={params.sortBy === 'role'} direction={params.sortOrder as 'asc' | 'desc'} />
+                Role <SortIcon active={params.sortBy === 'role'} direction={params.sortOrder as 'asc' | 'desc'} />
               </th>
-              <th className="px-4 py-3 font-semibold">Estado</th>
+              <th className="px-4 py-3 font-semibold">Status</th>
               <th
                 className="cursor-pointer px-4 py-3 font-semibold"
                 onClick={() => handleSort('created_at')}
               >
-                Registro <SortIcon active={params.sortBy === 'created_at'} direction={params.sortOrder as 'asc' | 'desc'} />
+                Registered <SortIcon active={params.sortBy === 'created_at'} direction={params.sortOrder as 'asc' | 'desc'} />
               </th>
-              <th className="px-4 py-3 font-semibold">Pronósticos</th>
+              <th className="px-4 py-3 font-semibold">Predictions</th>
             </tr>
           </thead>
           <tbody>
@@ -178,7 +178,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
             ) : data.users.length === 0 ? (
               <tr className="border-t border-border">
                 <td colSpan={6} className="px-4 py-12 text-center text-text-secondary">
-                  No se encontraron usuarios
+                  No users found
                 </td>
               </tr>
             ) : (
@@ -194,12 +194,12 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
                   <td className="px-4 py-3 text-text-secondary">{user.email}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[user.role] || ROLE_BADGE.user}`}>
-                      {user.role === 'admin' ? 'Admin' : 'Usuario'}
+                      {user.role === 'admin' ? 'Admin' : 'User'}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[user.is_active ? 'active' : 'inactive']}`}>
-                      {user.is_active ? 'Activo' : 'Inactivo'}
+                      {user.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-text-secondary">
@@ -233,7 +233,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
               disabled={data.page <= 1}
               className="rounded-lg border border-border px-3 py-1.5 text-sm text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Anterior
+              Previous
             </button>
             <span className="text-sm text-text-secondary">
               Página {data.page} de {data.totalPages}
@@ -243,7 +243,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
               disabled={data.page >= data.totalPages}
               className="rounded-lg border border-border px-3 py-1.5 text-sm text-text-primary transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Siguiente
+              Next
             </button>
           </div>
         </div>

@@ -20,14 +20,14 @@ export function AdminLeaderboardTable() {
   useEffect(() => { load() }, [])
 
   if (loading) {
-    return <div className="text-text-secondary text-sm">Cargando leaderboard...</div>
+    return <div className="text-text-secondary text-sm">Loading leaderboard...</div>
   }
 
   if (!data || !data.entries || data.entries.length === 0) {
     return (
       <div className="flex flex-col gap-4">
         <BackToAdmin />
-        <p className="text-text-secondary">No hay apuestas validadas para mostrar.</p>
+        <p className="text-text-secondary">No validated bets to display.</p>
       </div>
     )
   }
@@ -37,13 +37,13 @@ export function AdminLeaderboardTable() {
       <BackToAdmin />
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-white">
-          Leaderboard {data.provisionalOnly ? '(Provisional)' : '(Oficial)'}
+          Leaderboard {data.provisionalOnly ? '(Provisional)' : '(Official)'}
         </h2>
         <button
           onClick={load}
           className="rounded-full border border-white/10 px-4 py-1.5 text-xs text-text-secondary hover:text-white transition-all"
         >
-          Recargar
+          Reload
         </button>
       </div>
 
@@ -52,11 +52,11 @@ export function AdminLeaderboardTable() {
           <thead>
             <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-bold tracking-wide text-text-secondary uppercase">
               <th className="px-4 py-3 w-12 text-center">#</th>
-              <th className="px-4 py-3">Usuario</th>
-              <th className="px-4 py-3">Apuesta</th>
+              <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Bet</th>
               <th className="px-4 py-3 text-right">Provisional</th>
-              <th className="px-4 py-3 text-right">Oficial</th>
-              <th className="px-4 py-3 text-right">Total Anterior</th>
+              <th className="px-4 py-3 text-right">Official</th>
+              <th className="px-4 py-3 text-right">Previous Total</th>
             </tr>
           </thead>
           <tbody>
@@ -69,7 +69,7 @@ export function AdminLeaderboardTable() {
                   {entry.provisionalScore}
                   {entry.provisionalScoredAt && (
                     <span className="block text-[10px] text-text-secondary">
-                      {new Date(entry.provisionalScoredAt).toLocaleDateString('es-ES')}
+                      {new Date(entry.provisionalScoredAt).toLocaleDateString('en-US')}
                     </span>
                   )}
                 </td>
@@ -86,7 +86,7 @@ export function AdminLeaderboardTable() {
       </div>
 
       <p className="text-[10px] text-text-secondary text-right">
-        Actualizado: {new Date(data.calculatedAt).toLocaleString('es-ES')}
+        Updated: {new Date(data.calculatedAt).toLocaleString('en-US')}
       </p>
     </div>
   )

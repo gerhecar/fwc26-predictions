@@ -21,7 +21,7 @@ export function RulesView() {
     <div className="mx-auto max-w-3xl">
       <div className="mb-8">
         <h1 className="font-[family-name:var(--font-bebas)] text-4xl tracking-wide text-white">
-          Reglas & Puntuaci&oacute;n
+          Rules & Scoring
         </h1>
         <p className="mt-1 text-sm text-text-secondary">
           FIFA World Cup 2026 &mdash; Prediction Game
@@ -74,10 +74,10 @@ export function RulesView() {
                   <thead>
                     <tr className="border-b border-white/10 bg-white/5">
                       <th className="px-4 py-3 text-left text-xs font-bold tracking-wide text-text-secondary uppercase">
-                        Fase / Concepto
+                        Phase / Concept
                       </th>
                       <th className="px-4 py-3 text-right text-xs font-bold tracking-wide text-text-secondary uppercase">
-                        Puntos
+                        Points
                       </th>
                     </tr>
                   </thead>

@@ -38,11 +38,11 @@ export async function signUp(
   )
 
   if ((existing as any[]).length > 0) {
-    return { user: null, error: 'Este email ya está registrado' }
+    return { user: null, error: 'This email is already registered' }
   }
 
   if (password.length < 6) {
-    return { user: null, error: 'La contraseña debe tener al menos 6 caracteres' }
+    return { user: null, error: 'Password must be at least 6 characters' }
   }
 
   const id = generateUUID()
@@ -61,7 +61,7 @@ export async function signUp(
       error: null,
     }
   } catch {
-    return { user: null, error: 'Error al registrar usuario' }
+    return { user: null, error: 'Error registering user' }
   }
 }
 
@@ -78,19 +78,19 @@ export async function signIn(
 
   const users = rows as any[]
   if (users.length === 0) {
-    return { user: null, error: 'Email o usuario incorrectos' }
+    return { user: null, error: 'Incorrect email or username' }
   }
 
   const user = users[0]
 
   if (!user.is_active) {
-    return { user: null, error: 'Cuenta deshabilitada. Contacta a un administrador.' }
+    return { user: null, error: 'Account disabled. Contact an administrator.' }
   }
 
   const valid = await bcrypt.compare(password, user.password_hash)
 
   if (!valid) {
-    return { user: null, error: 'Email o usuario incorrectos' }
+    return { user: null, error: 'Incorrect email or username' }
   }
 
   await pool.execute('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id])

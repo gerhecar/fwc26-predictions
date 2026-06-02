@@ -23,16 +23,16 @@ export function AdminDashboard({ initialStatus, tournamentId }: Props) {
     setRecResult(null)
     try {
       const result = await recalculateStandings(tournamentId)
-      setRecResult(`Actualizados ${result.updated} usuarios`)
+      setRecResult(`Updated ${result.updated} users`)
     } catch {
-      setRecResult('Error al recalcular')
+      setRecResult('Error recalculating')
     }
     setRecalculating(false)
   }
 
   return (
     <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
-      <h2 className="font-semibold text-white mb-4">Estado del torneo</h2>
+      <h2 className="font-semibold text-white mb-4">Tournament Status</h2>
       <div className="flex gap-2 flex-wrap mb-4">
         {(['draft', 'active', 'locked', 'completed'] as const).map((s) => (
           <button
@@ -45,7 +45,7 @@ export function AdminDashboard({ initialStatus, tournamentId }: Props) {
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
-            {s === 'draft' ? 'Borrador' : s === 'active' ? 'Activo' : s === 'locked' ? 'Bloqueado' : 'Completado'}
+            {s === 'draft' ? 'Draft' : s === 'active' ? 'Active' : s === 'locked' ? 'Locked' : 'Completed'}
           </button>
         ))}
       </div>
@@ -57,7 +57,7 @@ export function AdminDashboard({ initialStatus, tournamentId }: Props) {
           disabled={recalculating}
           className="px-6 py-2 rounded-lg bg-fifa-blue text-white font-semibold hover:bg-fifa-blue/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          {recalculating ? 'Calculando...' : 'Recalcular puntajes'}
+          {recalculating ? 'Calculating...' : 'Recalculate scores'}
         </button>
         {recResult && (
           <p className="text-sm text-gray-400 mt-2">{recResult}</p>

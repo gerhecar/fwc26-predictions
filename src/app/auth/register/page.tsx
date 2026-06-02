@@ -24,7 +24,7 @@ export default function RegisterPage() {
     setSuccess(false)
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+      setError('Password must be at least 6 characters')
       return
     }
 
@@ -51,15 +51,15 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-fifa-navy to-fifa-blue px-4">
       <Card className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-fifa-blue">Crear Cuenta</h1>
-          <p className="text-sm text-text-secondary">Únete a la competencia</p>
+          <h1 className="text-2xl font-bold text-fifa-blue">Create Account</h1>
+          <p className="text-sm text-text-secondary">Join the Competition</p>
         </div>
 
         <form onSubmit={handleRegister} className="flex flex-col gap-4">
           <Input
-            label="Nombre"
+            label="Name"
             type="text"
-            placeholder="Tu nombre"
+            placeholder="Your name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             required
@@ -73,9 +73,9 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Contraseña"
+            label="Password"
             type="password"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Minimum 6 characters"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -87,22 +87,22 @@ export default function RegisterPage() {
 
           {success && (
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 text-center">
-              <p className="text-green-500 font-semibold">¡Cuenta creada!</p>
-              <p className="text-sm text-gray-300 mt-1">Redirigiendo al inicio...</p>
+              <p className="text-green-500 font-semibold">Account created!</p>
+              <p className="text-sm text-gray-300 mt-1">Redirecting to home...</p>
             </div>
           )}
 
           {!success && (
             <Button type="submit" loading={loading} className="w-full">
-              Crear cuenta
+              Create Account
             </Button>
           )}
         </form>
 
         <p className="mt-4 text-center text-sm text-text-secondary">
-          ¿Ya tienes cuenta?{' '}
+          Already have an account?{' '}
           <Link href="/auth/login" className="text-fifa-blue hover:underline">
-            Iniciar sesión
+            Sign In
           </Link>
         </p>
       </Card>
