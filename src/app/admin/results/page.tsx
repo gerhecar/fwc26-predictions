@@ -3,6 +3,8 @@ import { getPool } from '@/lib/db/pool'
 import { AppShell } from '@/components/layout/app-shell'
 import { AdminResultsPanel } from '@/components/admin/results-panel'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminResultsPage() {
   await requireAdmin()
   const pool = getPool()

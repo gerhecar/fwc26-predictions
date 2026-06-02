@@ -137,19 +137,42 @@ CREATE TABLE IF NOT EXISTS bet_submissions (
   bet_name VARCHAR(255) NOT NULL,
   prediction_json JSON NOT NULL,
   champion_name VARCHAR(255) DEFAULT NULL,
-  status ENUM('submitted') NOT NULL DEFAULT 'submitted',
+  status ENUM('submitted', 'valid', 'deleted') NOT NULL DEFAULT 'submitted',
+  validated_at TIMESTAMP NULL DEFAULT NULL,
+  validated_by VARCHAR(36) DEFAULT NULL,
   email_sent BOOLEAN NOT NULL DEFAULT FALSE,
   email_error VARCHAR(500) DEFAULT NULL,
+  submitted_via_invitation BOOLEAN NOT NULL DEFAULT FALSE,
+  invitation_id VARCHAR(36) DEFAULT NULL,
   submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uk_user_bet_name (user_id, bet_name),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS bet_invitations (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL,
+  bet_slot TINYINT NOT NULL,
+  token VARCHAR(128) NOT NULL UNIQUE,
+  status ENUM('active', 'used', 'expired', 'revoked') NOT NULL DEFAULT 'active',
+  expires_at TIMESTAMP NOT NULL,
+  used_at TIMESTAMP NULL DEFAULT NULL,
+  used_by_name VARCHAR(255) DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_bet_invitations_token ON bet_invitations(token);
+CREATE INDEX idx_bet_invitations_user ON bet_invitations(user_id);
+CREATE INDEX idx_bet_invitations_user_slot ON bet_invitations(user_id, bet_slot);
 
 CREATE TABLE IF NOT EXISTS official_results (
   id VARCHAR(36) PRIMARY KEY,
   tournament_id VARCHAR(36) NOT NULL,
   results_json JSON NOT NULL,
   status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+  phase_status JSON DEFAULT NULL,
   updated_by VARCHAR(36) DEFAULT NULL,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE

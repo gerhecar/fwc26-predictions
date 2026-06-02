@@ -3,6 +3,8 @@ import { getPool } from '@/lib/db/pool'
 import { AppShell } from '@/components/layout/app-shell'
 import { RankingsView, type StandingWithProfile } from '@/components/rankings/rankings-view'
 
+export const dynamic = 'force-dynamic'
+
 export default async function RankingsPage() {
   const user = await getCurrentUser()
 

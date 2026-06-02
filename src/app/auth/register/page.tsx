@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signUp } from '@/lib/auth/client'
+import { getDashboardRoute } from '@/lib/auth/routes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -40,7 +41,7 @@ export default function RegisterPage() {
     if (user) {
       setSuccess(true)
       setTimeout(() => {
-        router.push('/dashboard')
+        router.push(getDashboardRoute(user.role))
         router.refresh()
       }, 1000)
     }

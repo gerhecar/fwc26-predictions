@@ -5,6 +5,8 @@ import { getTournamentGroups, getUserGroupPredictions } from '@/lib/groups/queri
 import { BracketView } from '@/components/bracket/bracket-view'
 import type { GroupLetter } from '@/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function BracketPage() {
   const user = await getCurrentUser()
 

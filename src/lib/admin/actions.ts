@@ -67,6 +67,7 @@ export async function deleteUser(
 
     const pool = getPool()
     await pool.execute('DELETE FROM predictions WHERE user_id = ?', [userId])
+    await pool.execute('DELETE FROM bet_submissions WHERE user_id = ?', [userId])
     await pool.execute('DELETE FROM standings WHERE user_id = ?', [userId])
     await pool.execute('DELETE FROM user_group_members WHERE user_id = ?', [userId])
     await pool.execute('UPDATE user_groups SET created_by = NULL WHERE created_by = ?', [userId])
@@ -75,5 +76,68 @@ export async function deleteUser(
     return { success: true, message: 'Usuario eliminado correctamente' }
   } catch (e) {
     return { success: false, message: e instanceof Error ? e.message : 'Error al eliminar usuario' }
+  }
+}
+
+export async function validateBet(
+  betId: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    await assertAdmin()
+    const pool = getPool()
+
+    const [existing] = await pool.execute(
+      'SELECT id, status FROM bet_submissions WHERE id = ?',
+      [betId],
+    )
+    const bets = existing as any[]
+    if (bets.length === 0) {
+      return { success: false, message: 'Apuesta no encontrada' }
+    }
+    if (bets[0].status !== 'submitted') {
+      return { success: false, message: 'Solo se pueden validar apuestas en estado submitted' }
+    }
+
+    const admin = await getCurrentUser()
+    await pool.execute(
+      "UPDATE bet_submissions SET status = 'valid', validated_at = NOW(), validated_by = ? WHERE id = ?",
+      [admin!.id, betId],
+    )
+
+    revalidatePath('/admin/bets')
+    return { success: true, message: 'Apuesta validada correctamente' }
+  } catch (e) {
+    return { success: false, message: e instanceof Error ? e.message : 'Error al validar apuesta' }
+  }
+}
+
+export async function deleteBet(
+  betId: string,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    await assertAdmin()
+    const pool = getPool()
+
+    const [existing] = await pool.execute(
+      'SELECT id, status FROM bet_submissions WHERE id = ?',
+      [betId],
+    )
+    const bets = existing as any[]
+    if (bets.length === 0) {
+      return { success: false, message: 'Apuesta no encontrada' }
+    }
+    if (bets[0].status === 'deleted') {
+      return { success: false, message: 'La apuesta ya está eliminada' }
+    }
+
+    await pool.execute(
+      "UPDATE bet_submissions SET status = 'deleted' WHERE id = ?",
+      [betId],
+    )
+
+    revalidatePath('/admin/bets')
+    return { success: true, message: 'Apuesta eliminada correctamente' }
+  } catch (e) {
+    return { success: false, message: e instanceof Error ? e.message : 'Error al eliminar apuesta' }
   }
 }

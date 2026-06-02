@@ -40,7 +40,7 @@ $issues += @{
 
 $issues += @{
   title = "Configurar Docker y script de inicializacion de BD"
-  body = "## Descripcion`nConfiguracion del entorno MySQL local con Docker.`n`n## Cambios realizados`n- docker-compose.yml - MySQL 8.0`n- npm run db:migrate - Crea tablas`n- npm run db:seed - Poblacion inicial`n- npm run db:setup - Ambos`n`n## Seed data`n- Admin user: admin@fwc26.com / Florendiversion`n- Torneo: FIFA World Cup 2026 (activo)`n- 48 equipos en 12 grupos (A-L)`n- Scoring config inicial"
+  body = "## Descripcion`nConfiguracion del entorno MySQL local con Docker.`n`n## Cambios realizados`n- docker-compose.yml - MySQL 8.0`n- npm run db:migrate - Crea tablas`n- npm run db:seed - Poblacion inicial`n- npm run db:setup - Ambos`n`n## Seed data`n- Admin user: admin@fwc26.com / <ADMIN_PASSWORD>`n- Torneo: FIFA World Cup 2026 (activo)`n- 48 equipos en 12 grupos (A-L)`n- Scoring config inicial"
   labels = @("enhancement", "devops")
 }
 

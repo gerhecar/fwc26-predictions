@@ -3,6 +3,8 @@ import { AppShell } from '@/components/layout/app-shell'
 import { GroupManager } from '@/components/groups/group-manager'
 import { redirect } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 export default async function GroupsManagePage() {
   const user = await getCurrentUser()
   if (!user) redirect('/auth/login')

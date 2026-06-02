@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UserDetailPanel } from './user-detail-panel'
+import { BackToAdmin } from './back-to-admin'
 import type { AdminUser, AdminUserListResponse, AdminUserListParams } from '@/types'
 
 interface Props {
@@ -91,6 +92,7 @@ export function AdminUsersView({ initialData, initialParams }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
+      <BackToAdmin />
       <div>
         <h1 className="text-2xl font-bold text-text-primary">Gestión de Usuarios</h1>
         <p className="mt-1 text-sm text-text-secondary">

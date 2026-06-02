@@ -23,12 +23,13 @@ async function main() {
 
   // Create admin user
   const adminId = uuid()
-  const passwordHash = await bcrypt.hash('Florendiversion', 10)
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Florendiversion'
+  const passwordHash = await bcrypt.hash(adminPassword, 10)
   await connection.execute(
     'INSERT IGNORE INTO users (id, email, display_name, password_hash, role) VALUES (?, ?, ?, ?, ?)',
     [adminId, 'admin@fwc26.com', 'admin', passwordHash, 'admin'],
   )
-  console.log('✓ Admin user created (admin@fwc26.com / Florendiversion)')
+  console.log(`✓ Admin user created (admin@fwc26.com / ${adminPassword})`)
 
   // Check if tournament already exists
   const [existing] = await connection.execute(

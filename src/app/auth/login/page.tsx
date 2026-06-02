@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from '@/lib/auth/client'
+import { getDashboardRoute } from '@/lib/auth/routes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -20,7 +21,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    const { error: authError } = await signIn(email, password)
+    const { user, error: authError } = await signIn(email, password)
 
     if (authError) {
       setError(authError)
@@ -28,8 +29,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
-    router.refresh()
+    router.replace(getDashboardRoute(user?.role))
   }
 
   return (

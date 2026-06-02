@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
 import { SESSION_COOKIE, getJWTSecret } from './config'
+import { getDashboardRoute } from './routes'
 
 export async function updateSession(request: NextRequest) {
   const response = NextResponse.next({ request })
@@ -21,8 +22,10 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/auth/')
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin/')
+  const isInviteRoute = request.nextUrl.pathname.startsWith('/invite/')
   const isProtectedRoute =
     !isAuthRoute &&
+    !isInviteRoute &&
     !request.nextUrl.pathname.startsWith('/_next') &&
     request.nextUrl.pathname !== '/' &&
     !request.nextUrl.pathname.startsWith('/api/')
@@ -35,13 +38,13 @@ export async function updateSession(request: NextRequest) {
 
   if (userId && isAdminRoute && role !== 'admin') {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = getDashboardRoute('user')
     return NextResponse.redirect(url)
   }
 
   if (userId && isAuthRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = getDashboardRoute(role)
     return NextResponse.redirect(url)
   }
 

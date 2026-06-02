@@ -6,6 +6,8 @@ import { DashboardClient } from '@/components/dashboard/dashboard-client'
 const BG_URL =
   'https://images.unsplash.com/photo-1731312084255-6b38e3ea2484?fm=jpg&q=60&w=3000'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const user = await getCurrentUser()
   if (!user) redirect('/auth/login')

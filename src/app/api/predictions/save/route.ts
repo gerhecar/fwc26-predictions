@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/auth/auth'
 import { getPool } from '@/lib/db/pool'
 import { generatePredictionJson } from '@/lib/predictions/json-export'
 import { sendPredictionEmail } from '@/lib/email/send-prediction'
+import { rateLimit } from '@/lib/rate-limit'
 import crypto from 'crypto'
 
 export async function POST(request: Request) {
@@ -10,6 +11,12 @@ export async function POST(request: Request) {
     const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
+    }
+
+    // Rate limit per user
+    const rl = rateLimit(`bet:${user.id}`, 10, 60_000)
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Demasiados intentos. Intenta de nuevo más tarde.' }, { status: 429 })
     }
 
     const body: {
@@ -33,6 +40,9 @@ export async function POST(request: Request) {
     if (!betName || typeof betName !== 'string' || betName.trim().length === 0) {
       return NextResponse.json({ error: 'betName requerido' }, { status: 400 })
     }
+    if (betName.trim().length > 255) {
+      return NextResponse.json({ error: 'El nombre de la apuesta es demasiado largo (máx. 255 caracteres)' }, { status: 400 })
+    }
 
     const champion = bracketPicks[104]
     if (!champion) {
@@ -40,65 +50,81 @@ export async function POST(request: Request) {
     }
 
     const pool = getPool()
+    const connection = await pool.getConnection()
 
-    // Count existing bets for this user
-    const [countRows] = await pool.execute(
-      'SELECT COUNT(*) AS cnt FROM bet_submissions WHERE user_id = ?',
-      [user.id],
-    )
-    const existingCount = (countRows as Array<{ cnt: number }>)[0]?.cnt ?? 0
-    if (existingCount >= 2) {
-      return NextResponse.json({ error: 'Máximo 2 apuestas por usuario' }, { status: 400 })
-    }
+    try {
+      await connection.beginTransaction()
 
-    // Check unique bet_name per user
-    const [dupRows] = await pool.execute(
-      'SELECT id FROM bet_submissions WHERE user_id = ? AND bet_name = ?',
-      [user.id, betName.trim()],
-    )
-    if ((dupRows as Array<unknown>).length > 0) {
-      return NextResponse.json({ error: 'Ya tienes una apuesta con ese nombre' }, { status: 409 })
-    }
-
-    const predictionId = crypto.randomUUID()
-
-    const predictionJson = generatePredictionJson(
-      user.id,
-      user.display_name,
-      predictionId,
-      betName.trim(),
-      groupPredictions,
-      thirdPlaceSelection,
-      bracketPicks,
-    )
-
-    await pool.execute(
-      `INSERT INTO bet_submissions (id, user_id, bet_name, prediction_json, champion_name, status)
-       VALUES (?, ?, ?, ?, ?, 'submitted')`,
-      [predictionId, user.id, betName.trim(), JSON.stringify(predictionJson), champion],
-    )
-
-    const emailResult = await sendPredictionEmail(predictionJson)
-
-    if (!emailResult.success) {
-      await pool.execute(
-        'UPDATE bet_submissions SET email_sent = FALSE, email_error = ? WHERE id = ?',
-        [emailResult.error || 'Unknown error', predictionId],
+      // Lock the user's bet rows to prevent race conditions
+      const [lockRows] = await connection.execute(
+        "SELECT COUNT(*) AS cnt FROM bet_submissions WHERE user_id = ? AND status != 'deleted' FOR UPDATE",
+        [user.id],
       )
-    } else {
-      await pool.execute(
-        'UPDATE bet_submissions SET email_sent = TRUE WHERE id = ?',
-        [predictionId],
-      )
-    }
+      const existingCount = (lockRows as Array<{ cnt: number }>)[0]?.cnt ?? 0
+      if (existingCount >= 2) {
+        await connection.rollback()
+        connection.release()
+        return NextResponse.json({ error: 'Máximo 2 apuestas por usuario' }, { status: 400 })
+      }
 
-    return NextResponse.json({
-      success: true,
-      predictionId,
-      champion,
-      submittedAt: predictionJson.submittedAt,
-      emailSent: emailResult.success,
-    })
+      // Check unique bet_name per user
+      const [dupRows] = await connection.execute(
+        'SELECT id FROM bet_submissions WHERE user_id = ? AND bet_name = ?',
+        [user.id, betName.trim()],
+      )
+      if ((dupRows as Array<unknown>).length > 0) {
+        await connection.rollback()
+        connection.release()
+        return NextResponse.json({ error: 'Ya tienes una apuesta con ese nombre' }, { status: 409 })
+      }
+
+      const predictionId = crypto.randomUUID()
+
+      const predictionJson = generatePredictionJson(
+        user.id,
+        user.display_name,
+        predictionId,
+        betName.trim(),
+        groupPredictions,
+        thirdPlaceSelection,
+        bracketPicks,
+      )
+
+      await connection.execute(
+        `INSERT INTO bet_submissions (id, user_id, bet_name, prediction_json, champion_name, status)
+         VALUES (?, ?, ?, ?, ?, 'submitted')`,
+        [predictionId, user.id, betName.trim(), JSON.stringify(predictionJson), champion],
+      )
+
+      await connection.commit()
+      connection.release()
+
+      const emailResult = await sendPredictionEmail(predictionJson)
+
+      if (!emailResult.success) {
+        await pool.execute(
+          'UPDATE bet_submissions SET email_sent = FALSE, email_error = ? WHERE id = ?',
+          [emailResult.error || 'Unknown error', predictionId],
+        )
+      } else {
+        await pool.execute(
+          'UPDATE bet_submissions SET email_sent = TRUE WHERE id = ?',
+          [predictionId],
+        )
+      }
+
+      return NextResponse.json({
+        success: true,
+        predictionId,
+        champion,
+        submittedAt: predictionJson.submittedAt,
+        emailSent: emailResult.success,
+      })
+    } catch (txErr) {
+      await connection.rollback()
+      connection.release()
+      throw txErr
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido'
     console.error('Save prediction failed:', message)
@@ -117,11 +143,20 @@ export async function GET() {
     }
 
     const pool = getPool()
+    const [colRows] = await pool.execute(
+      "SHOW COLUMNS FROM bet_submissions LIKE 'submitted_via_invitation'",
+    )
+    const hasInvCol = (colRows as Array<unknown>).length > 0
+
+    const selectFields = hasInvCol
+      ? `id, bet_name, champion_name, submitted_at, submitted_via_invitation, invitation_id`
+      : `id, bet_name, champion_name, submitted_at`
+
     const [rows] = await pool.execute(
-      `SELECT id, bet_name, champion_name, submitted_at
+      `SELECT ${selectFields}
        FROM bet_submissions
-       WHERE user_id = ?
-       ORDER BY submitted_at DESC`,
+       WHERE user_id = ? AND status != 'deleted'
+       ORDER BY submitted_at ASC`,
       [user.id],
     )
 

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { getDashboardRoute } from '@/lib/auth/routes'
 
 const navItems = [
-  { href: '/dashboard', label: 'Inicio', icon: '🏠' },
   { href: '/predictions', label: 'Grupos', icon: '📋' },
   { href: '/bracket', label: 'Knockout', icon: '🏆' },
   { href: '/rankings', label: 'Tabla', icon: '📊' },
@@ -14,7 +14,14 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(u => setUserRole(u?.role || null))
+      .catch(() => {})
+  }, [])
 
   const isAuthPage = pathname?.startsWith('/auth/')
 
@@ -23,6 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const isAdminPage = pathname?.startsWith('/admin/')
+  const homeHref = getDashboardRoute(userRole)
 
   return (
     <div className="flex min-h-screen flex-col pb-16 md:pb-0">
@@ -32,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link href="/admin" className="text-sm font-semibold text-fifa-blue">
               Panel Admin
             </Link>
-            <Link href="/dashboard" className="text-sm text-text-secondary hover:text-text-primary">
+            <Link href="/admin" className="text-sm text-text-secondary hover:text-text-primary">
               Volver al inicio
             </Link>
           </div>
@@ -43,6 +51,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-surface md:relative md:border-t-0">
         <div className="mx-auto flex max-w-6xl items-center justify-around md:justify-start md:gap-6 md:px-4 md:py-3">
+          <Link
+            href={homeHref}
+            className={`flex flex-col items-center gap-0.5 px-3 py-2 text-xs transition-colors md:flex-row md:gap-2 md:text-sm ${
+              pathname === homeHref
+                ? 'text-fifa-blue'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            <span className="text-lg md:text-base">🏠</span>
+            <span>Inicio</span>
+          </Link>
           {navItems.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
             return (

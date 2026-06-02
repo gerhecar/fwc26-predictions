@@ -7,6 +7,8 @@ interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminUsersPage({ searchParams }: Props) {
   await requireAdmin()
 
