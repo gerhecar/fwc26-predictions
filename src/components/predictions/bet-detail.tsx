@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS } from '@/lib/predictions/constants'
 import type { PredictionExport } from '@/lib/predictions/json-export'
-import BG from '@/images/campo.avif'
+import BG from '@/images/campo.jpg'
 
 interface BetDetailProps {
   prediction: PredictionExport

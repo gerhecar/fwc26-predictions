@@ -6,7 +6,7 @@ import { CountryFlag } from '@/components/ui/country-flag'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
 import { BracketLayout } from './bracket-layout'
 import type { GroupLetter } from '@/types'
-import BG from '@/images/campo.avif'
+import BG from '@/images/campo.jpg'
 import Trump from '@/images/trump.jpg'
 
 interface MatchSlot {
