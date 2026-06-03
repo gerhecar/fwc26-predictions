@@ -25,7 +25,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Scripts needed at runtime
-COPY --chown=nextjs:nodejs /app/scripts ./scripts
+COPY --chown=nextjs:nodejs scripts ./scripts
 
 USER nextjs
 
