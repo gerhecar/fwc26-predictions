@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -19,8 +19,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS, GROUP_TEAMS } from '@/lib/predictions/constants'
 import { BackToAdmin } from './back-to-admin'
-import { CalculateScoresButton } from './calculate-scores-button'
-import type { GroupLetter, PhaseStatus, PhaseStatusValue } from '@/types'
+import { lookupAnnexC } from '@/lib/groups/annex-c'
+import type { GroupLetter } from '@/types'
 
 interface OfficialResults {
   groupStage: Record<string, string[]>
@@ -233,11 +233,16 @@ function KnockoutTab({
     return groupStage[letter]?.[2] ?? null
   }, [groupStage])
 
+  const thirdAssignments = useMemo(() => {
+    if (bestThirdPlaced.length < 8) return null
+    return lookupAnnexC(bestThirdPlaced as GroupLetter[])
+  }, [bestThirdPlaced])
+
   const matchTeams = useCallback((mn: number): [string | null, string | null] => {
     if (R32_DEFS[mn]) {
       const [a, b] = R32_DEFS[mn].split(' vs ')
-      const aMatch = a.match(/^(\d+)° Grupo ([A-L])$/)
-      const bMatch = b.match(/^(\d+)° Grupo ([A-L])$/)
+      const aMatch = a.match(/^(\d+)°(?: Grupo )?([A-L])$/)
+      const bMatch = b.match(/^(\d+)°(?: Grupo )?([A-L])$/)
       return [
         aMatch ? getTeam(aMatch[2], parseInt(aMatch[1]) - 1) : null,
         bMatch ? getTeam(bMatch[2], parseInt(bMatch[1]) - 1) : null,
@@ -245,11 +250,9 @@ function KnockoutTab({
     }
     if (R32_THIRD[mn]) {
       const [a, b] = R32_THIRD[mn].split(' vs ')
-      const aMatch = a.match(/^(\d+)° Grupo ([A-L])$/)
+      const aMatch = a.match(/^(\d+)°(?: Grupo )?([A-L])$/)
       if (aMatch && b.startsWith('3°')) {
-        const thirdLetter = bestThirdPlaced.length > 0
-          ? bestThirdPlaced[Object.keys(R32_THIRD).indexOf(String(mn))] || null
-          : null
+        const thirdLetter = thirdAssignments?.[mn] ?? null
         return [
           getTeam(aMatch[2], parseInt(aMatch[1]) - 1),
           thirdLetter ? getThird(thirdLetter) : null,
@@ -261,7 +264,7 @@ function KnockoutTab({
       return [knockout[c1] ?? null, knockout[c2] ?? null]
     }
     return [null, null]
-  }, [R32_DEFS, R32_THIRD, CHILD_MAP, getTeam, getThird, knockout, bestThirdPlaced])
+  }, [R32_DEFS, R32_THIRD, CHILD_MAP, getTeam, getThird, knockout, thirdAssignments])
 
   const getAffected = useCallback((mn: number): number[] => {
     const result: number[] = []
@@ -316,8 +319,27 @@ function KnockoutTab({
     stageMatches[k].sort((a, b) => a - b)
   }
 
+  const r32resolved = useMemo(() => {
+    const ms = [...Object.keys(R32_DEFS).map(Number), ...Object.keys(R32_THIRD).map(Number)]
+    return ms.some(mn => {
+      const [h, a] = matchTeams(mn)
+      return h || a
+    })
+  }, [matchTeams])
+
   return (
     <div className="flex flex-col gap-6">
+      {!r32resolved && (
+        <div className="rounded-xl border border-fifa-gold/30 bg-fifa-gold/5 p-4 text-sm text-fifa-gold text-center">
+          <p className="font-[family-name:var(--font-bebas)] text-base tracking-wide">KNOCKOUT BRACKET NOT AVAILABLE</p>
+          <p className="mt-1 text-text-secondary">
+            Fill in Group Stage results and select Best Third-Placed teams first.
+            Winners: {Object.keys(groupStage).filter(l => groupStage[l]?.length >= 1).length}/12 &mdash;
+            Runners-up: {Object.keys(groupStage).filter(l => groupStage[l]?.length >= 2).length}/12 &mdash;
+            Best thirds: {bestThirdPlaced.length}/8
+          </p>
+        </div>
+      )}
       <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${STAGE_KEYS.length}, minmax(220px, 1fr))` }}>
         {STAGE_KEYS.map(stage => (
           <div key={stage} className="rounded-xl border border-white/10 bg-white/5 p-4">
@@ -410,16 +432,8 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
   const [bestThirdPlaced, setBestThirdPlaced] = useState<string[]>([])
   const [knockout, setKnockout] = useState<Record<number, string>>({})
   const [status, setStatus] = useState('draft')
-  const [saving, setSaving] = useState(false)
-  const [publishing, setPublishing] = useState(false)
+  const [calculating, setCalculating] = useState(false)
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
-  const [phaseStatus, setPhaseStatus] = useState<PhaseStatus | null>(null)
-  const [savedGroupStage, setSavedGroupStage] = useState<Record<string, string[]> | null>(null)
-  const [savedBestThirdPlaced, setSavedBestThirdPlaced] = useState<string[] | null>(null)
-  const [savedKnockout, setSavedKnockout] = useState<Record<number, string> | null>(null)
-  const [provisionalSummary, setProvisionalSummary] = useState<string | null>(null)
-  const [lockMsg, setLockMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
-  const [locking, setLocking] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/admin/results')
@@ -429,20 +443,15 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
           setGroupStage(data.results.groupStage || {})
           setBestThirdPlaced(data.results.bestThirdPlaced || [])
           setKnockout(data.results.knockout || {})
-          setSavedGroupStage(JSON.parse(JSON.stringify(data.results.groupStage || {})))
-          setSavedBestThirdPlaced([...(data.results.bestThirdPlaced || [])])
-          setSavedKnockout(JSON.parse(JSON.stringify(data.results.knockout || {})))
         }
         setStatus(data.status || 'draft')
-        setPhaseStatus(data.phaseStatus || null)
       })
       .catch(() => {})
   }, [])
 
-  const handleSave = async () => {
-    setSaving(true)
+  const handleCalculate = async () => {
+    setCalculating(true)
     setMsg(null)
-    setProvisionalSummary(null)
     try {
       const fullGroupStage: Record<string, string[]> = {}
       for (const letter of GROUP_LETTERS) {
@@ -457,155 +466,50 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error')
 
-      // Save snapshots for discard functionality
-      setSavedGroupStage(JSON.parse(JSON.stringify(fullGroupStage)))
-      setSavedBestThirdPlaced([...bestThirdPlaced])
-      setSavedKnockout(JSON.parse(JSON.stringify(knockout)))
-
-      setMsg({ type: 'ok', text: 'Results saved as draft' })
-
-      if (data.provisionalSummary) {
-        const s = data.provisionalSummary
-        setProvisionalSummary(
-          `${s.scoredBets} bet${s.scoredBets !== 1 ? 's' : ''} scored (provisional)` +
-          (s.skippedBets > 0 ? `, ${s.skippedBets} skipped` : '')
-        )
+      if (data.summary) {
+        const s = data.summary
+        setMsg({
+          type: 'ok',
+          text: `Scores calculated: ${s.scoredBets} bet${s.scoredBets !== 1 ? 's' : ''} scored` +
+            (s.skippedBets > 0 ? `, ${s.skippedBets} skipped` : '') +
+            (s.errors.length > 0 ? `, ${s.errors.length} error${s.errors.length !== 1 ? 's' : ''}` : ''),
+        })
+      } else {
+        setMsg({ type: 'ok', text: 'Results saved and scores calculated.' })
       }
-
-      // Reload phase status
-      const reloadRes = await fetch('/api/admin/results')
-      const reloadData = await reloadRes.json()
-      if (reloadData.phaseStatus) setPhaseStatus(reloadData.phaseStatus)
     } catch (err) {
-      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error saving' })
+      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error calculating scores' })
     } finally {
-      setSaving(false)
+      setCalculating(false)
     }
   }
 
-  const handleDiscard = () => {
-    if (tab === 'groups' && savedGroupStage) setGroupStage(JSON.parse(JSON.stringify(savedGroupStage)))
-    if (tab === 'third' && savedBestThirdPlaced) setBestThirdPlaced([...savedBestThirdPlaced])
-    if (tab === 'knockout' && savedKnockout) setKnockout(JSON.parse(JSON.stringify(savedKnockout)))
-  }
-
-  const handleLock = async (phase: string) => {
-    setLocking(phase)
-    setLockMsg(null)
-    try {
-      const res = await fetch(`/api/admin/results/lock/${phase}`, { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error')
-      setLockMsg({ type: 'ok', text: `Phase locked: ${data.phaseLabel}. ${data.officialSummary?.scoredBets || 0} bets scored (official).` })
-      const reloadRes = await fetch('/api/admin/results')
-      const reloadData = await reloadRes.json()
-      if (reloadData.phaseStatus) setPhaseStatus(reloadData.phaseStatus)
-    } catch (err) {
-      setLockMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error locking' })
-    } finally {
-      setLocking(null)
-    }
-  }
-
-  const handlePublish = async () => {
-    setPublishing(true)
-    setMsg(null)
-    try {
-      const res = await fetch('/api/admin/results/publish', { method: 'PUT' })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Error')
-      setStatus('published')
-      setMsg({ type: 'ok', text: 'Results published successfully' })
-    } catch (err) {
-      setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Error publishing' })
-    } finally {
-      setPublishing(false)
-    }
-  }
-
-  const getPhaseBadge = (phase: keyof PhaseStatus): { label: string; color: string } | null => {
-    if (!phaseStatus) return null
-    const ps = phaseStatus[phase]
-    if (!ps) return null
-    if (ps.status === 'locked') return { label: 'LOCKED', color: 'text-fifa-gold border-fifa-gold/30 bg-fifa-gold/10' }
-    return { label: 'DRAFT', color: 'text-text-secondary border-white/10 bg-white/5' }
-  }
-
-  const hasUnsavedChanges = (): boolean => {
-    if (tab === 'groups' && savedGroupStage) {
-      return JSON.stringify(groupStage) !== JSON.stringify(savedGroupStage)
-    }
-    if (tab === 'third' && savedBestThirdPlaced) {
-      return JSON.stringify(bestThirdPlaced) !== JSON.stringify(savedBestThirdPlaced)
-    }
-    if (tab === 'knockout' && savedKnockout) {
-      return JSON.stringify(knockout) !== JSON.stringify(savedKnockout)
-    }
-    return false
-  }
-
-  const tabs: { key: Tab; label: string; phaseKey?: keyof PhaseStatus; lockPhase?: string }[] = [
-    { key: 'groups', label: 'GROUP STAGE', phaseKey: 'groupStage', lockPhase: 'group' },
-    { key: 'third', label: 'THIRD PLACES', phaseKey: 'bestThirdPlaced', lockPhase: 'third' },
-    { key: 'knockout', label: 'KNOCKOUT', phaseKey: 'knockout', lockPhase: 'knockout' },
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'groups', label: 'GROUP STAGE' },
+    { key: 'third', label: 'THIRD PLACES' },
+    { key: 'knockout', label: 'KNOCKOUT' },
   ]
 
   return (
     <div className="flex flex-col gap-6">
       <BackToAdmin />
-      {/* Status banner */}
-      <div className={`rounded-xl border px-4 py-3 text-sm ${
-        status === 'published'
-          ? 'border-accent-green/30 bg-accent-green/10 text-accent-green'
-          : 'border-white/10 bg-white/5 text-text-secondary'
-      }`}>
-        Status: <strong>{status === 'published' ? 'PUBLISHED' : 'DRAFT'}</strong>
-        {status === 'published' && (
-          <span className="ml-2 text-text-secondary">
-            — Results are published. Edit as draft and re-publish if they change.
-          </span>
-        )}
-      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
-        {tabs.map(t => {
-          const badge = t.phaseKey ? getPhaseBadge(t.phaseKey) : null
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex-1 rounded-lg px-4 py-2 text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-2 ${
-                tab === t.key
-                  ? 'bg-accent-green text-black shadow-lg shadow-accent-green/20'
-                  : 'text-text-secondary hover:text-white'
-              }`}
-            >
-              {t.label}
-              {badge && (
-                <span className={`text-[8px] px-1.5 py-0.5 rounded-full border ${badge.color}`}>
-                  {badge.label}
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Discard changes button */}
-      {hasUnsavedChanges() && (
-        <div className="flex justify-end">
+        {tabs.map(t => (
           <button
-            onClick={handleDiscard}
-            className="flex items-center gap-1 rounded-full border border-red-500/30 px-4 py-1.5 text-xs text-red-400 hover:bg-red-500/10 transition-all"
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`flex-1 rounded-lg px-4 py-2 text-xs font-bold tracking-wide transition-all ${
+              tab === t.key
+                ? 'bg-accent-green text-black shadow-lg shadow-accent-green/20'
+                : 'text-text-secondary hover:text-white'
+            }`}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="2" y1="2" x2="10" y2="10" /><line x1="10" y1="2" x2="2" y2="10" />
-            </svg>
-            Discard changes
+            {t.label}
           </button>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Tab content */}
       {tab === 'groups' && <GroupStageTab groupStage={groupStage} onChange={setGroupStage} />}
@@ -625,63 +529,14 @@ export function AdminResultsPanel({ tournamentId: _unused }: { tournamentId: str
         </div>
       )}
 
-      {/* Provisional summary */}
-      {provisionalSummary && (
-        <div className="rounded-xl border border-accent-green/30 bg-accent-green/10 p-3 text-sm text-accent-green text-center">
-          Provisional scores calculated: {provisionalSummary}
-        </div>
-      )}
-
-      {/* Lock message */}
-      {lockMsg && (
-        <div className={`rounded-xl border p-3 text-sm text-center ${
-          lockMsg.type === 'ok' ? 'border-fifa-gold/30 bg-fifa-gold/10 text-fifa-gold' : 'border-red-500/30 bg-red-500/10 text-red-400'
-        }`}>
-          {lockMsg.text}
-        </div>
-      )}
-
-      {/* Calculate Scores (legacy) */}
-      <div className="pt-4 border-t border-white/10">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-          <p className="text-sm font-semibold text-white mb-2">Calculate Scores (Legacy)</p>
-          <p className="text-xs text-text-secondary mb-3">
-            Publish results first, then calculate global scores.
-          </p>
-          <CalculateScoresButton />
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-wrap gap-3 justify-center pt-4 border-t border-white/10">
+      {/* Single action button */}
+      <div className="flex justify-center pt-4 border-t border-white/10">
         <button
-          onClick={handleSave}
-          disabled={saving}
-          className="rounded-full bg-accent-green px-8 py-3 text-sm font-bold tracking-wide text-black transition-all hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-50"
+          onClick={handleCalculate}
+          disabled={calculating}
+          className="rounded-full bg-accent-green px-10 py-3 text-sm font-bold tracking-wide text-black transition-all hover:shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-50"
         >
-          {saving ? 'SAVING...' : 'SAVE DRAFT'}
-        </button>
-
-        {/* Phase lock buttons */}
-        {tabs.find(t => t.key === tab)?.lockPhase && phaseStatus?.[tabs.find(t => t.key === tab)!.phaseKey!]?.status !== 'locked' && (
-          <button
-            onClick={() => handleLock(tabs.find(t => t.key === tab)!.lockPhase!)}
-            disabled={locking !== null}
-            className="rounded-full border border-fifa-gold px-8 py-3 text-sm font-bold tracking-wide text-fifa-gold transition-all hover:bg-fifa-gold/10 disabled:opacity-50"
-          >
-            {locking === tabs.find(t => t.key === tab)!.lockPhase
-              ? 'LOCKING...'
-              : `LOCK ${tab === 'groups' ? 'GROUP STAGE' : tab === 'third' ? 'THIRD PLACES' : 'KNOCKOUT'}`
-            }
-          </button>
-        )}
-
-        <button
-          onClick={handlePublish}
-          disabled={publishing || status === 'published'}
-          className="rounded-full border border-white/20 px-8 py-3 text-sm font-bold tracking-wide text-white transition-all hover:bg-white/10 disabled:opacity-50"
-        >
-          {publishing ? 'PUBLISHING...' : status === 'published' ? 'PUBLISHED ✓' : 'PUBLISH ALL'}
+          {calculating ? 'CALCULATING SCORES...' : 'CALCULATE SCORES'}
         </button>
       </div>
     </div>

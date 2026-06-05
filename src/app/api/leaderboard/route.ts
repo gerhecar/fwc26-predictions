@@ -14,26 +14,9 @@ export async function GET() {
 
     const pool = getPool()
 
-    const [orRows] = await pool.execute(
-      `SELECT phase_status FROM official_results
-       WHERE tournament_id = (SELECT id FROM tournaments WHERE slug = 'fifa-world-cup-2026' LIMIT 1)
-       LIMIT 1`,
-    )
-    const officialResult = (orRows as any[])[0]
-    let isDraft = true
-    if (officialResult?.phase_status) {
-      const ps =
-        typeof officialResult.phase_status === 'string'
-          ? JSON.parse(officialResult.phase_status)
-          : officialResult.phase_status
-      isDraft = !ps.groupStage || ps.groupStage.status === 'draft'
-    }
-
     const [rows] = await pool.execute(`
       SELECT
         b.bet_name,
-        b.provisional_score,
-        b.provisional_scored_at,
         b.official_score,
         b.official_scored_at,
         b.champion_correct,
@@ -48,7 +31,7 @@ export async function GET() {
       JOIN users u ON u.id = b.user_id
       WHERE b.status = 'valid'
       ORDER BY
-        b.provisional_score DESC,
+        b.official_score DESC,
         b.champion_correct DESC,
         b.finalists_correct DESC,
         b.semifinalists_correct DESC,
@@ -70,44 +53,30 @@ export async function GET() {
       return NextResponse.json(response)
     }
 
-    const entries: UserLeaderboardEntry[] = bets.map((b: any, i: number) => {
-      const hasProvisional = (b.provisional_score || 0) > 0
-      const hasOfficial = (b.official_score || 0) > 0
-      let statusLabel: 'provisional' | 'official' | 'not_calculated'
-      if (hasOfficial) {
-        statusLabel = 'official'
-      } else if (hasProvisional) {
-        statusLabel = 'provisional'
-      } else {
-        statusLabel = 'not_calculated'
-      }
+    const entries: UserLeaderboardEntry[] = bets.map((b: any, i: number) => ({
+      position: i + 1,
+      displayName: b.display_name,
+      betName: b.bet_name,
+      provisionalScore: b.official_score || 0,
+      provisionalScoredAt: b.official_scored_at || null,
+      officialScore: b.official_score || null,
+      officialScoredAt: b.official_scored_at || null,
+      statusLabel: b.official_score ? 'official' : 'not_calculated',
+      championCorrect: !!b.champion_correct,
+      finalistsCorrect: b.finalists_correct || 0,
+      semifinalistsCorrect: b.semifinalists_correct || 0,
+      quarterfinalistsCorrect: b.quarterfinalists_correct || 0,
+      qualifiedTeamsCorrect: b.qualified_teams_correct || 0,
+      knockoutScore: b.knockout_score || 0,
+    }))
 
-      return {
-        position: i + 1,
-        displayName: b.display_name,
-        betName: b.bet_name,
-        provisionalScore: b.provisional_score || 0,
-        provisionalScoredAt: b.provisional_scored_at || null,
-        officialScore: b.official_score || null,
-        officialScoredAt: b.official_scored_at || null,
-        statusLabel,
-        championCorrect: !!b.champion_correct,
-        finalistsCorrect: b.finalists_correct || 0,
-        semifinalistsCorrect: b.semifinalists_correct || 0,
-        quarterfinalistsCorrect: b.quarterfinalists_correct || 0,
-        qualifiedTeamsCorrect: b.qualified_teams_correct || 0,
-        knockoutScore: b.knockout_score || 0,
-      }
-    })
-
-    const hasAnyDate = entries.some(
-      e => e.provisionalScoredAt || e.officialScoredAt,
-    )
-    const calculatedAt = hasAnyDate ? new Date().toISOString() : null
+    const calculatedAt = entries.some(e => e.officialScoredAt)
+      ? new Date().toISOString()
+      : null
 
     const response: UserLeaderboardResponse = {
       entries,
-      isDraft,
+      isDraft: false,
       calculatedAt,
     }
 

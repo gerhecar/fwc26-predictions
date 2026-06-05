@@ -9,7 +9,7 @@ async function main() {
     host: process.env.MYSQL_HOST || 'localhost',
     port: parseInt(process.env.MYSQL_PORT || '3306'),
     user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || '',
+    password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || '',
     database: process.env.MYSQL_DATABASE || 'fwc26',
     multipleStatements: true,
   })

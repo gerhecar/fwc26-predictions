@@ -2,14 +2,9 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/auth'
 import { getPool } from '@/lib/db/pool'
 import { calculateScore, calculateTieBreakers } from '@/lib/scoring/engine'
+import { getTournamentId } from '@/lib/bracket/generate-bracket'
 import crypto from 'crypto'
-import type { ScoreResult, PhaseStatus } from '@/types'
-
-const DEFAULT_PHASE_STATUS: PhaseStatus = {
-  groupStage: { status: 'draft', lockedAt: null, lockedBy: null },
-  bestThirdPlaced: { status: 'draft', lockedAt: null, lockedBy: null },
-  knockout: { status: 'draft', lockedAt: null, lockedBy: null },
-}
+import type { ScoreResult } from '@/types'
 
 export async function GET() {
   try {
@@ -20,7 +15,7 @@ export async function GET() {
 
     const pool = getPool()
     const [rows] = await pool.execute(
-      `SELECT id, results_json, phase_status, status, updated_by, updated_at
+      `SELECT id, results_json, status, updated_by, updated_at
        FROM official_results
        ORDER BY updated_at DESC LIMIT 1`,
     )
@@ -28,7 +23,6 @@ export async function GET() {
     const results = rows as Array<{
       id: string
       results_json: string
-      phase_status: string | null
       status: string
       updated_by: string
       updated_at: string
@@ -42,7 +36,6 @@ export async function GET() {
           knockout: {},
           champion: null,
         },
-        phaseStatus: DEFAULT_PHASE_STATUS,
         status: 'draft',
       })
     }
@@ -52,16 +45,9 @@ export async function GET() {
       ? JSON.parse(row.results_json)
       : row.results_json
 
-    let phaseStatus = DEFAULT_PHASE_STATUS
-    if (row.phase_status) {
-      const ps = typeof row.phase_status === 'string' ? JSON.parse(row.phase_status) : row.phase_status
-      phaseStatus = { ...DEFAULT_PHASE_STATUS, ...ps }
-    }
-
     return NextResponse.json({
       id: row.id,
       results: parsed,
-      phaseStatus,
       status: row.status,
       updatedBy: row.updated_by,
       updatedAt: row.updated_at,
@@ -76,7 +62,7 @@ export async function GET() {
   }
 }
 
-async function computeProvisionalScores(pool: any, officialData: any, userId: string) {
+async function computeScores(pool: any, officialData: any) {
   const official = {
     groupStage: officialData.groupStage || {},
     bestThirdPlaced: officialData.bestThirdPlaced || [],
@@ -113,10 +99,14 @@ async function computeProvisionalScores(pool: any, officialData: any, userId: st
       await pool.execute(
         `UPDATE bet_submissions
          SET provisional_score = ?, provisional_score_breakdown = ?, provisional_scored_at = ?,
+             official_score = ?, official_score_breakdown = ?, official_scored_at = ?,
              champion_correct = ?, finalists_correct = ?, semifinalists_correct = ?,
              quarterfinalists_correct = ?, qualified_teams_correct = ?, knockout_score = ?
          WHERE id = ?`,
         [
+          scoreResult.totalScore,
+          JSON.stringify({ breakdown: scoreResult.breakdown, details: scoreResult.details }),
+          scoredAt,
           scoreResult.totalScore,
           JSON.stringify({ breakdown: scoreResult.breakdown, details: scoreResult.details }),
           scoredAt,
@@ -152,9 +142,9 @@ export async function PUT(request: Request) {
     const pool = getPool()
 
     const [existing] = await pool.execute(
-      `SELECT id, phase_status FROM official_results ORDER BY updated_at DESC LIMIT 1`,
+      `SELECT id FROM official_results ORDER BY updated_at DESC LIMIT 1`,
     )
-    const existingRows = existing as Array<{ id: string; phase_status: string | null }>
+    const existingRows = existing as Array<{ id: string }>
 
     const resultsJson = JSON.stringify({ groupStage, bestThirdPlaced, knockout, champion })
 
@@ -162,14 +152,9 @@ export async function PUT(request: Request) {
 
     if (existingRows.length > 0) {
       resultsId = existingRows[0].id
-      let ps = DEFAULT_PHASE_STATUS
-      if (existingRows[0].phase_status) {
-        const parsed = typeof existingRows[0].phase_status === 'string' ? JSON.parse(existingRows[0].phase_status) : existingRows[0].phase_status
-        ps = { ...DEFAULT_PHASE_STATUS, ...parsed }
-      }
       await pool.execute(
-        `UPDATE official_results SET results_json = ?, phase_status = ?, updated_by = ? WHERE id = ?`,
-        [resultsJson, JSON.stringify(ps), user.id, resultsId],
+        `UPDATE official_results SET results_json = ?, updated_by = ? WHERE id = ?`,
+        [resultsJson, user.id, resultsId],
       )
     } else {
       const [tournamentRows] = await pool.execute(
@@ -182,16 +167,42 @@ export async function PUT(request: Request) {
 
       resultsId = crypto.randomUUID()
       await pool.execute(
-        `INSERT INTO official_results (id, tournament_id, results_json, phase_status, updated_by)
-         VALUES (?, ?, ?, ?, ?)`,
-        [resultsId, tRows[0].id, resultsJson, JSON.stringify(DEFAULT_PHASE_STATUS), user.id],
+        `INSERT INTO official_results (id, tournament_id, results_json, updated_by)
+         VALUES (?, ?, ?, ?)`,
+        [resultsId, tRows[0].id, resultsJson, user.id],
       )
     }
 
-    // Compute provisional scores after save
-    const summary = await computeProvisionalScores(pool, { groupStage, bestThirdPlaced, knockout, champion }, user.id)
+    // Compute scores for all bets
+    const summary = await computeScores(pool, { groupStage, bestThirdPlaced, knockout, champion })
 
-    return NextResponse.json({ success: true, provisionalSummary: summary })
+    // Save knockout winners into matches table (non-blocking)
+    try {
+      const tournamentId = await getTournamentId()
+      if (tournamentId && knockout && Object.keys(knockout).length > 0) {
+        const [teamRows] = await pool.execute(
+          `SELECT id, name FROM teams WHERE tournament_id = ?`,
+          [tournamentId],
+        )
+        const teamNameToId = new Map<string, string>()
+        for (const t of teamRows as Array<{ id: string; name: string }>) {
+          teamNameToId.set(t.name, t.id)
+        }
+
+        for (const [matchNumStr, winnerName] of Object.entries(knockout)) {
+          const matchNum = Number(matchNumStr)
+          const winnerId = teamNameToId.get(String(winnerName)) || null
+          await pool.execute(
+            `UPDATE matches SET winner_id = ? WHERE tournament_id = ? AND match_number = ?`,
+            [winnerId, tournamentId, matchNum],
+          )
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update match winners:', err)
+    }
+
+    return NextResponse.json({ success: true, summary })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido'
     console.error('Save official results failed:', message)

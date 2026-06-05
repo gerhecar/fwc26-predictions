@@ -27,10 +27,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Scripts needed at runtime
 COPY --chown=nextjs:nodejs scripts ./scripts
 
+# Dependencies for runtime scripts (migrate, seed, docker-start)
+RUN npm install mysql2
+
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT=3000
 
-CMD ["node", "scripts/docker-start.sh"]
+CMD ["sh", "scripts/docker-start.sh"]

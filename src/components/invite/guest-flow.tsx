@@ -6,6 +6,7 @@ import { BracketLayout } from '@/components/predictions/bracket-layout'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { GROUP_LETTERS, GROUP_TEAMS } from '@/lib/predictions/constants'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
+import Trump from '@/images/trump.jpg'
 import type { GroupLetter } from '@/types'
 
 type Step = 'groups' | 'third-place' | 'knockout'
@@ -315,6 +316,16 @@ export function GuestFlow({ token }: GuestFlowProps) {
   const allPicksComplete = baseMatches.every(m => !!bracketPicks[m.matchNumber])
   const champion = bracketPicks[104] || null
 
+  // Lock body scroll when success overlay is visible
+  useEffect(() => {
+    if (saveSuccess) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      window.scrollTo(0, 0)
+      return () => { document.body.style.overflow = prev }
+    }
+  }, [saveSuccess])
+
   const performSave = useCallback(async (name: string) => {
     if (!allPicksComplete || submitted || submitting) return
     setSubmitting(true)
@@ -559,25 +570,38 @@ export function GuestFlow({ token }: GuestFlowProps) {
           )}
 
           {saveSuccess && (
-            <div className="flex flex-col items-center gap-4 py-8">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-green/20">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-accent-green">
-                  <polyline points="4 12 9 17 20 6" />
-                </svg>
-              </div>
-              <h2 className="font-[family-name:var(--font-bebas)] text-2xl tracking-wide text-accent-green">
-                BET SUBMITTED
-              </h2>
-              {champion && (
-                <p className="flex items-center gap-2 text-white">
-                  <CountryFlag name={champion} width={24} className="shrink-0" />
-                  {champion}
+            <section
+              className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+              style={{ height: '100dvh', width: '100dvw' }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${Trump.src})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              />
+              <div className="absolute inset-0 bg-[#0a0e1a]/60" />
+              <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-6 text-center max-w-4xl">
+                <h1
+                  className="font-[family-name:var(--font-bebas)] text-fifa-gold drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] leading-none"
+                  style={{ fontSize: 'clamp(2.25rem, 7vw, 7rem)' }}
+                >
+                  MAKE PORRA GREAT AGAIN
+                </h1>
+                {champion && (
+                  <p className="flex items-center gap-2 text-base sm:text-lg md:text-xl text-white/80 drop-shadow-md">
+                    <CountryFlag name={champion} width={24} className="shrink-0" />
+                    {champion}
+                  </p>
+                )}
+                <p className="text-xs sm:text-sm text-text-secondary drop-shadow-md">
+                  ID: {saveSuccess.slice(0, 8)}... — Your bet has been saved successfully.
                 </p>
-              )}
-              <p className="text-sm text-text-secondary">
-                Your bet has been saved successfully.
-              </p>
-            </div>
+              </div>
+            </section>
           )}
 
           {submitted && !saveSuccess && (

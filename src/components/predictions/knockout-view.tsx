@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useCallback, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { usePredictionsStore, getThirdPlaceTeam } from '@/lib/predictions/store'
 import { CountryFlag } from '@/components/ui/country-flag'
 import { lookupAnnexC } from '@/lib/groups/annex-c'
@@ -249,6 +250,7 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
 
   const champion = bracketPicks[104] || null
 
+  const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState<{ predictionId: string } | null>(null)
@@ -456,6 +458,12 @@ export function KnockoutView({ onEditGroups, onEditThirdPlace }: KnockoutViewPro
             <p className="text-xs sm:text-sm text-text-secondary drop-shadow-md">
               ID: {saveSuccess.predictionId.slice(0, 8)}... — You can no longer modify your prediction.
             </p>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="mt-2 rounded-full border border-white/30 bg-white/10 px-8 py-3 text-sm font-bold tracking-wide text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/20 hover:border-white/50 hover:shadow-[0_0_25px_rgba(255,255,255,0.15)] focus:outline-none focus:ring-2 focus:ring-white/40"
+            >
+              BACK TO DASHBOARD
+            </button>
           </div>
         </section>
       )}

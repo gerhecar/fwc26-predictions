@@ -17,11 +17,8 @@ export async function GET() {
         b.id,
         b.user_id,
         b.bet_name,
-        b.provisional_score,
-        b.provisional_scored_at,
         b.official_score,
         b.official_scored_at,
-        b.total_score,
         b.status,
         b.champion_correct,
         b.finalists_correct,
@@ -35,7 +32,7 @@ export async function GET() {
       JOIN users u ON u.id = b.user_id
       WHERE b.status = 'valid'
       ORDER BY
-        b.provisional_score DESC,
+        b.official_score DESC,
         b.champion_correct DESC,
         b.finalists_correct DESC,
         b.semifinalists_correct DESC,
@@ -48,18 +45,15 @@ export async function GET() {
 
     const bets = rows as any[]
 
-    const hasProvisional = bets.some((b: any) => (b.provisional_score || 0) > 0)
-    const hasOfficial = bets.some((b: any) => (b.official_score || 0) > 0)
-
     const entries: LeaderboardEntry[] = bets.map((b: any) => ({
       userId: b.user_id,
       displayName: b.display_name,
       betName: b.bet_name,
-      provisionalScore: b.provisional_score || 0,
-      provisionalScoredAt: b.provisional_scored_at || null,
+      provisionalScore: b.official_score || 0,
+      provisionalScoredAt: b.official_scored_at || null,
       officialScore: b.official_score || 0,
       officialScoredAt: b.official_scored_at || null,
-      totalScore: b.total_score || 0,
+      totalScore: b.official_score || 0,
       status: b.status,
       championCorrect: !!b.champion_correct,
       finalistsCorrect: b.finalists_correct || 0,
@@ -71,7 +65,7 @@ export async function GET() {
 
     const response: LeaderboardResponse = {
       entries,
-      provisionalOnly: hasProvisional && !hasOfficial,
+      provisionalOnly: false,
       calculatedAt: new Date().toISOString(),
     }
 

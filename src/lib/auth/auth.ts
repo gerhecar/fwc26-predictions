@@ -112,7 +112,7 @@ export async function signOut(): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE, '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '').startsWith('https://'),
     sameSite: 'lax',
     path: '/',
     maxAge: 0,
@@ -170,7 +170,7 @@ async function setSessionCookie(userId: string, role: string): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: (process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '').startsWith('https://'),
     sameSite: 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 30,

@@ -33,10 +33,6 @@ export async function POST() {
     }
 
     const officialRow = officialList[0]
-    if (officialRow.status !== 'published') {
-      return NextResponse.json({ success: false, message: 'Los resultados oficiales deben estar publicados antes de calcular puntajes.' })
-    }
-
     const officialData = typeof officialRow.results_json === 'string'
       ? JSON.parse(officialRow.results_json)
       : officialRow.results_json

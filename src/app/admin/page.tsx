@@ -2,7 +2,6 @@ import { requireAdmin } from '@/lib/auth/auth'
 import { getPool } from '@/lib/db/pool'
 import { AppShell } from '@/components/layout/app-shell'
 import { AdminDashboard } from '@/components/admin/admin-dashboard'
-import { CalculateScoresButton } from '@/components/admin/calculate-scores-button'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -97,12 +96,7 @@ export default async function AdminPage() {
             <h3 className="font-semibold text-white">Leaderboard</h3>
             <p className="text-sm text-gray-400">View provisional and official scores</p>
           </Link>
-          <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6">
-            <div className="text-2xl mb-2">📊</div>
-            <h3 className="font-semibold text-white">Calculate Scores</h3>
-            <p className="text-sm text-gray-400 mb-3">Recalculate scores comparing bets vs results</p>
-            <CalculateScoresButton />
-          </div>
+
         </div>
       </div>
     </AppShell>

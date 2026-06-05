@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth/auth'
 import { getPool } from '@/lib/db/pool'
 import { calculateScore, calculateTieBreakers, filterScoreByLockedPhases } from '@/lib/scoring/engine'
+import {
+  generateBracketFromResults,
+  persistBracket,
+  getTournamentId,
+} from '@/lib/bracket/generate-bracket'
 import type { ScoreResult, PhaseStatus, PhaseStatusEntry } from '@/types'
 
 const PHASE_MAP: Record<string, keyof PhaseStatus> = {
@@ -147,13 +152,60 @@ export async function POST(
       [JSON.stringify(phaseStatus), user.id, row.id],
     )
 
+    // Auto-generate bracket if both groupStage and bestThirdPlaced are now locked
+    let bracketGenerated = false
+    if (
+      phaseStatus.groupStage.status === 'locked' &&
+      phaseStatus.bestThirdPlaced.status === 'locked' &&
+      phaseKey !== 'knockout'
+    ) {
+      try {
+        const groupStage = officialData.groupStage || {}
+        const bestThird = officialData.bestThirdPlaced || []
+
+        // Debug: qualified teams
+        const gs = groupStage as Record<string, string[]>
+        const winners = Object.values(gs).filter(t => t.length >= 1).length
+        const runnersUp = Object.values(gs).filter(t => t.length >= 2).length
+        const bestThirdWithData = bestThird.filter((l: string) => gs[l]?.[2] != null).length
+        console.log('[AdminResults] Group Stage locked:', phaseStatus.groupStage.status === 'locked')
+        console.log('[AdminResults] Best Thirds selected:', bestThird)
+        console.log('[AdminResults] Group winners count:', winners)
+        console.log('[AdminResults] Group runners-up count:', runnersUp)
+        console.log('[AdminResults] Best third teams found:', bestThirdWithData, '/ 8')
+
+        const tournamentId = await getTournamentId()
+        if (tournamentId) {
+          const bracket = await generateBracketFromResults(
+            tournamentId,
+            groupStage,
+            bestThird,
+          )
+          console.log('[AdminResults] Generating Round of 32 bracket...')
+          for (const m of bracket) {
+            if (m.stage === 'round_of_32') {
+              console.log(`[AdminResults]   R32-${String(m.matchNumber).padStart(2, '0')}: ${m.home.teamName ?? '?'} vs ${m.away.teamName ?? '?'}`)
+            }
+          }
+          console.log('[AdminResults] Total R32 matches generated:', bracket.filter(m => m.stage === 'round_of_32').length)
+          await persistBracket(tournamentId, bracket, row.id)
+          console.log('[AdminResults] Knockout bracket persisted successfully')
+          bracketGenerated = true
+        }
+      } catch (err) {
+        console.error('Auto-generate bracket failed:', err)
+        // Non-fatal: continue even if bracket generation fails
+      }
+    }
+
     return NextResponse.json({
       success: true,
       phase: phaseKey,
       phaseLabel: PHASE_LABELS[phase],
       status: 'locked',
       lockedAt: now,
-      officialSummary: { scoredBets, skippedBets, errors, calculatedAt: scoredAt },
+      officialSummary: { scoredBets, skippedBets, errors, calculatedAt: now },
+      bracketGenerated,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error desconocido'

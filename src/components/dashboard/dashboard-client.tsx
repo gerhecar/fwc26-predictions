@@ -81,8 +81,19 @@ export function DashboardClient({ displayName }: { displayName: string }) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error')
       if (data.invitation?.inviteUrl) {
-        await navigator.clipboard.writeText(data.invitation.inviteUrl)
-        setActionMsg({ slot: betSlot, type: 'ok',         text: 'Link copied to clipboard' })
+        try {
+          await navigator.clipboard.writeText(data.invitation.inviteUrl)
+        } catch {
+          const ta = document.createElement('textarea')
+          ta.value = data.invitation.inviteUrl
+          ta.style.position = 'fixed'
+          ta.style.opacity = '0'
+          document.body.appendChild(ta)
+          ta.select()
+          document.execCommand('copy')
+          ta.remove()
+        }
+        setActionMsg({ slot: betSlot, type: 'ok', text: 'Link copied to clipboard' })
       }
       loadData()
     } catch (err) {
